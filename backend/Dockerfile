@@ -1,19 +1,37 @@
-FROM node:20-alpine
+# Stage 1: Build Stage
+FROM node:20-alpine AS builder
 
-RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
-
+# Set working directory
 WORKDIR /home/node/app
 
-USER node
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-COPY --chown=node:node package*.json ./
+# Install dependencies
+RUN npm install
 
-RUN npm ci
+# Copy application files
+COPY . .
 
-COPY --chown=node:node . .
+# Build the TypeScript application
+RUN npm run build
 
+# Stage 2: Production Stage
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /home/node/app
+
+# Copy only the built files and dependencies from builder
+COPY --from=builder /home/node/app/dist ./dist
+COPY --from=builder /home/node/app/node_modules ./node_modules
+COPY package*.json ./
+
+# Set environment variables
 ENV PORT=3000
 
+# Expose the application's port
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+# Start the Express.js server
+CMD ["node", "dist/index.js"]
