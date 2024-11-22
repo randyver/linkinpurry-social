@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Jalankan aplikasi
-CMD ["npm", "run", "preview"]
+CMD ["npm", "run", "dev"]
 
 # Port yang digunakan aplikasi
 EXPOSE 5173

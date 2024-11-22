@@ -4,7 +4,7 @@ services:
   # Backend Service (Node.js + Express)
   backend:
     build:
-      context: ./backend
+      context: ./backend  # Pastikan konteksnya adalah folder backend
       dockerfile: Dockerfile
     container_name: backend
     ports:
@@ -19,6 +19,7 @@ services:
     volumes:
       - ./backend:/home/node/app
 
+
   # Frontend Service (Vue/React + Vite)
   frontend:
     build:
@@ -32,7 +33,7 @@ services:
     networks:
       - app-network
     volumes:
-      - ./frontend:/app
+      - ./frontend:/home/node/app
 
   # Database Service (PostgreSQL)
   db:
