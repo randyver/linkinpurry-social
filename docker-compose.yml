@@ -18,7 +18,7 @@ services:
       - app-network
     volumes:
       - ./backend:/home/node/app
-
+      - ./backend/prisma:/prisma # Volume untuk Prisma
 
   # Frontend Service (Vue/React + Vite)
   frontend:
@@ -48,8 +48,8 @@ services:
     networks:
       - app-network
     volumes:
+      # Volume untuk menyimpan data secara persisten
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # Redis Service
   redis:
@@ -59,6 +59,19 @@ services:
       - "6379:6379"
     networks:
       - app-network
+
+  # Prisma CLI Service
+  prisma-cli:
+    image: node:18
+    container_name: prisma-cli
+    working_dir: /home/node/app
+    volumes:
+      - ./backend:/home/node/app
+    command: ["npx", "prisma", "migrate", "dev"]
+    networks:
+      - app-network
+    depends_on:
+      - db
 
 networks:
   app-network:
