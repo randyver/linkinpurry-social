@@ -1,37 +1,23 @@
-# Stage 1: Build Stage
-FROM node:20-alpine AS builder
+# Use the Node.js image for Node 18
+FROM node:18
 
-# Set working directory
-WORKDIR /home/node/app
+# Set working directory inside the container
+WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package.json and package-lock.json to install dependencies
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies (both dev and prod dependencies)
 RUN npm install
 
-# Copy application files
+# Copy the rest of the application code
 COPY . .
 
-# Build the TypeScript application
-RUN npm run build
+# Install TypeScript if it's not installed as a global dependency in your container (optional)
+RUN npm install -g typescript
 
-# Stage 2: Production Stage
-FROM node:20-alpine
-
-# Set working directory
-WORKDIR /home/node/app
-
-# Copy only the built files and dependencies from builder
-COPY --from=builder /home/node/app/dist ./dist
-COPY --from=builder /home/node/app/node_modules ./node_modules
-COPY package*.json ./
-
-# Set environment variables
-ENV PORT=3000
-
-# Expose the application's port
+# Expose port 3000 for the application
 EXPOSE 3000
 
-# Start the Express.js server
-CMD ["node", "dist/index.js"]
+# Set the default command to run the app in development mode using tsx
+CMD ["npm", "run", "dev"]

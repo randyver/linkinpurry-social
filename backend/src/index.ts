@@ -1,17 +1,16 @@
-import express, { Request, Response } from 'express';
+import { serve } from '@hono/node-server'
+import { Hono } from 'hono'
 
-const app = express();
-const port = process.env.PORT || 3000;
+const app = new Hono()
 
-// Middleware untuk parse JSON
-app.use(express.json());
+app.get('/', (c) => {
+  return c.text('Hello Hono!')
+})
 
-// Route dasar
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World');
-});
+const port = 3000
+console.log(`Server is running on http://localhost:${port}`)
 
-// Menjalankan server
-app.listen(port, () => {
-  console.log(`Server running on port http://localhost:${port}`);
-});
+serve({
+  fetch: app.fetch,
+  port
+})
