@@ -1,20 +1,20 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 function App() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
   // Function to handle form submission
   const registerUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:3000/register', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           username,
@@ -25,21 +25,21 @@ function App() {
 
       if (!response.ok) {
         const data = await response.json();
-        setMessage(data.error || 'Something went wrong!');
+        setMessage(data.error || "Something went wrong!");
         return;
       }
 
       const data = await response.json();
       setMessage(`User registered successfully: ${data.username}`);
     } catch (error) {
-      console.error('Error:', error);
-      setMessage('Failed to register user.');
+      console.error("Error:", error);
+      setMessage("Failed to register user.");
     }
   };
 
   return (
     <div className="App">
-      <p className=''>Register User</p>
+      <p className="">Register User</p>
       <form onSubmit={registerUser}>
         <div>
           <label htmlFor="username">Username:</label>
