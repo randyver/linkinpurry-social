@@ -39,7 +39,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Register User</h1>
+      <p className=''>Register User</p>
       <form onSubmit={registerUser}>
         <div>
           <label htmlFor="username">Username:</label>
