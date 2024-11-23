@@ -1,41 +1,39 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { PrismaClient } from '@prisma/client'
+
+// Import routes
+import registerRoute from './routes/Register.js'
+import loginRoute from './routes/Login.js'
+import usersRoute from './routes/Users.js'
 
 const app = new Hono()
-const prisma = new PrismaClient()
 
+// Middleware CORS
 app.use(
   '*',
   cors({
-    origin: 'http://localhost:5173', // Frontend URL
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-    allowHeaders: ['Content-Type'], // Allowed headers
+    origin: 'http://localhost:5173',
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type'],
   })
-);
+)
 
+// Base route
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
 
-app.post('/register', async (c) => {
-  const { username, email, password } = await c.req.json();
+// Tambahkan routes
+app.route('/api', registerRoute)
+app.route('/api', loginRoute)
+app.route('/api', usersRoute)
 
-  try {
-    const newUser = await prisma.user.create({
-      data: { username, email, passwordHash: password },
-    });
-    return c.json(newUser, 201);
-  } catch (error) {
-    return c.json({ error: 'Failed to create user' }, 400);
-  }
-});
-
+// Start server
 const port = 3000
 console.log(`Server running on http://localhost:${port}`)
 
 serve({
   fetch: app.fetch,
-  port
+  port,
 })

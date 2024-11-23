@@ -1,21 +1,21 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+// src/App.tsx
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/navbar";
+import Home from "./pages/Home";
 import Register from "./pages/Register";
-import { Button } from "./components/ui/button";
+import Users from "./pages/Users";
 
-const App = () => {
+function App() {
   return (
     <Router>
-      <h1 className="text-blue-600">Register User</h1>
-      <nav>
-        <Link to="/register">Register</Link> |{" "}
-        <Link to="/users">User List</Link>
-        <Button>Click me!</Button>
-      </nav>
+      <Navbar />
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/userlist" element={<Users/>} />
       </Routes>
     </Router>
   );
-};
+}
 
 export default App;
