@@ -16,7 +16,13 @@ registerRoute.post('/register', async (c) => {
       data: { username, email, passwordHash: hashedPassword },
     })
 
-    return c.json(newUser, 201)
+    // Konversi BigInt ke string
+    const userResponse = {
+      ...newUser,
+      id: newUser.id.toString(),
+    }
+
+    return c.json(userResponse, 201)
   } catch (error) {
     console.error(error)
     return c.json({ error: 'Failed to create user' }, 400)
