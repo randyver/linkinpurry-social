@@ -6,7 +6,13 @@ const usersRoute = new Hono()
 
 usersRoute.get('/users', async (c) => {
   try {
-    const users = await prisma.user.findMany()
+    const users = await prisma.user.findMany({
+      select: {
+        username: true,
+        email: true,
+      },
+    })
+
     return c.json(users)
   } catch (error) {
     console.error(error)
