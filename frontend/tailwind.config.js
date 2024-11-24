@@ -12,6 +12,14 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        "wbd-background": "hsl(35 60% 96.1%)",
+        "wbd-text": "hsl(37 14.9% 17.1%)",
+        "wbd-primary": "hsl(139 12.1% 25.9%)",
+        "wbd-secondary": "hsl(42 36.4% 87.1%)",
+        "wbd-highlight": "hsl(35 85% 71.2%)",
+        "wbd-tertiary": "hsl(33 31.3% 38.8%)",
+        "wbd-red": "hsl(0 31.3% 38.8%)",
+        "wbd-yellow": "hsl(34 34.4% 50.4%)",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -52,6 +60,9 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+      },
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
       },
     },
   },
