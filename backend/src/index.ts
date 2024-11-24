@@ -8,6 +8,7 @@ import loginRoute from './routes/Login.js'
 import usersRoute from './routes/Users.js'
 import usersSearchRoute from './routes/user-search.js'
 import connectionRoute from './routes/connection.js'
+import profileRoute from './routes/profile.js'
 
 const app = new Hono()
 
@@ -32,6 +33,7 @@ app.route('/api', loginRoute)
 app.route('/api', usersRoute)
 app.route('/api', usersSearchRoute)
 app.route('/api', connectionRoute)
+app.route('/api', profileRoute)
 
 // Start server
 const port = 3000
