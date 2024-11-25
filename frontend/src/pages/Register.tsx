@@ -1,149 +1,148 @@
-import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormField,
+} from "../components/ui/form";
+
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+
+const registerSchema = z
+  .object({
+    username: z.string().min(1, "Username is required"),
+    name: z.string(),
+    email: z.string().email("Invalid email format"),
+    password: z.string().min(1, "Password is required"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
+type FormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
-  const [username, setUsername] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
-  const [message, setMessage] = useState("");
+  const methods = useForm<FormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: "",
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-  // Function to handle form submission
-  const registerUser = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const {
+    handleSubmit,
+    formState: { errors },
+  } = methods;
 
-    // Validasi jika profile picture tidak diunggah
-    if (!profilePhoto) {
-      setMessage("Profile picture is required!");
-      return;
-    }
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    const { confirmPassword, ...payload } = data;
 
-    // Validasi passwords
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match!");
-      return;
-    }
+    const response = await fetch("http://localhost:3000/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-    const formData = new FormData();
-    formData.append("username", username);
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("profilePhoto", profilePhoto);
-
-    try {
-      const response = await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        setMessage(data.error || "Something went wrong!");
-        return;
-      }
-
-      const data = await response.json();
-      setMessage(`User registered successfully: ${data.username}`);
-    } catch (error) {
-      console.error("Error:", error);
-      setMessage("Failed to register user.");
+    if (response.ok) {
+      alert("User registered successfully");
+    } else {
+      const errorData = await response.json();
+      alert(`Failed to register user: ${errorData.error}`);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 text-wbd-text">
       <div className="bg-white p-8 rounded shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-gray-700">Register User</h2>
-        <form onSubmit={registerUser}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-600">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+        <Form {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <FormField
+              name="username"
+              control={methods.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="username">Username</FormLabel>
+                  <FormControl>
+                    <Input id="username" {...field} placeholder="Username" />
+                  </FormControl>
+                  <FormMessage>{errors.username?.message}</FormMessage>
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-600">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+            <FormField
+              name="name"
+              control={methods.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="name">Name</FormLabel>
+                  <FormControl>
+                    <Input id="name" {...field} placeholder="Name" />
+                  </FormControl>
+                  <FormMessage>{errors.name?.message}</FormMessage>
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-600">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+            <FormField
+              name="email"
+              control={methods.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="email">Email</FormLabel>
+                  <FormControl>
+                    <Input id="email" {...field} placeholder="Email" />
+                  </FormControl>
+                  <FormMessage>{errors.email?.message}</FormMessage>
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-600">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+            <FormField
+              name="password"
+              control={methods.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="password">Password</FormLabel>
+                  <FormControl>
+                    <Input id="password" type="password" {...field} placeholder="Password" />
+                  </FormControl>
+                  <FormMessage>{errors.password?.message}</FormMessage>
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-600">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+            <FormField
+              name="confirmPassword"
+              control={methods.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      {...field}
+                      placeholder="Confirm Password"
+                    />
+                  </FormControl>
+                  <FormMessage>{errors.confirmPassword?.message}</FormMessage>
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="profilePhoto" className="block text-sm font-medium text-gray-600">
-              Profile Picture
-            </label>
-            <input
-              type="file"
-              id="profilePhoto"
-              accept="image/*"
-              onChange={(e) => setProfilePhoto(e.target.files?.[0] || null)}
-              required
-              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition duration-200"
-          >
-            Register
-          </button>
-        </form>
-
-        {message && <p className="mt-4 text-center text-sm text-red-500">{message}</p>}
+            <Button type="submit">Register</Button>
+          </form>
+        </Form>
       </div>
     </div>
   );
