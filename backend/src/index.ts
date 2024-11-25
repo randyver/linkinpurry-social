@@ -11,11 +11,12 @@ import usersSearchRoute from './routes/user-search.js'
 import connectionRoute from './routes/connection.js'
 import profileRoute from './routes/profile.js'
 import checkSessionRoute from './routes/CheckSession.js'
+import { validateJWT } from './middleware/validateJWT.js'
 
 
 const app = new Hono()
 
-// Middleware CORS
+// Middleware
 app.use(
   '*',
   cors({
@@ -25,6 +26,7 @@ app.use(
     credentials: true,
   })
 )
+connectionRoute.use("*", validateJWT);
 
 // Base route
 app.get('/', (c) => {
