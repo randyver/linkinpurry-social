@@ -12,6 +12,8 @@ import {
 
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const registerSchema = z
   .object({
@@ -48,21 +50,30 @@ export default function Register() {
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     const { confirmPassword, ...payload } = data;
 
-    const response = await fetch("http://localhost:3000/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    const toastId = toast.loading("Registering user...");
 
-    if (response.ok) {
-      alert("User registered successfully");
-    } else {
-      const errorData = await response.json();
-      alert(`Failed to register user: ${errorData.error}`);
+    try {
+      const response = await fetch("http://localhost:3000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        toast.success("User registered successfully", { id: toastId });
+        navigate("/login");
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to register user: ${errorData.error}`, { id: toastId });
+      }
+    } catch (error) {
+      toast.error("An error occurred during registration", { id: toastId });
     }
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 text-wbd-text">
