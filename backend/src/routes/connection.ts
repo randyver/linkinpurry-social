@@ -85,38 +85,36 @@ connectionRoute.post("/connections/request", async (c) => {
     if (requestFromId === requestToId) {
       return errorResponse(
         c,
-        "User cannot send a connection request to themself",
+        "User cannot send a connection request to themselves",
         null,
         400
       );
     }
 
-    const existingConnection = await prisma.connection.findFirst({
-      where: {
-        fromId: requestFromId,
-        toId: requestToId,
-      },
-    });
+    await prisma.$transaction(async (tx) => {
+      const existingConnection = await tx.connection.findFirst({
+        where: { fromId: requestFromId, toId: requestToId },
+      });
 
-    if (existingConnection) {
-      return errorResponse(
-        c,
-        "User is already connected to the requested user",
-        null,
-        400
-      );
-    }
+      if (existingConnection) {
+        throw new Error("User is already connected to the requested user");
+      }
 
-    const existingRequest = await prisma.connectionRequest.findUnique({
-      where: { fromId_toId: { fromId: requestFromId, toId: requestToId } },
-    });
+      const existingRequest = await tx.connectionRequest.findUnique({
+        where: { fromId_toId: { fromId: requestFromId, toId: requestToId } },
+      });
 
-    if (existingRequest) {
-      return errorResponse(c, "Connection request already exists", null, 400);
-    }
+      if (existingRequest) {
+        throw new Error("Connection request already exists");
+      }
 
-    await prisma.connectionRequest.create({
-      data: { fromId: requestFromId, toId: requestToId, createdAt: new Date() },
+      await tx.connectionRequest.create({
+        data: {
+          fromId: requestFromId,
+          toId: requestToId,
+          createdAt: new Date(),
+        },
+      });
     });
 
     return c.json({ success: true, message: "Connection request sent" }, 201);
@@ -132,7 +130,7 @@ connectionRoute.post("/connections/request", async (c) => {
 connectionRoute.get("/connections/requests", async (c) => {
   try {
     const user = c.get("user");
-    
+
     if (!user) {
       return c.json({ success: false, message: "User not authenticated" }, 401);
     }
@@ -177,25 +175,27 @@ connectionRoute.post("/connections/requests/:action", async (c) => {
       return errorResponse(c, "Invalid action or user ID", null, 400);
     }
 
-    const request = await prisma.connectionRequest.findUnique({
-      where: { fromId_toId: { fromId, toId } },
-    });
-
-    if (!request) {
-      return errorResponse(c, "Connection request not found", null, 404);
-    }
-
-    if (action === "accept") {
-      await prisma.connection.createMany({
-        data: [
-          { fromId, toId, createdAt: new Date() },
-          { fromId: toId, toId: fromId, createdAt: new Date() },
-        ],
+    await prisma.$transaction(async (tx) => {
+      const request = await tx.connectionRequest.findUnique({
+        where: { fromId_toId: { fromId, toId } },
       });
-    }
 
-    await prisma.connectionRequest.delete({
-      where: { fromId_toId: { fromId, toId } },
+      if (!request) {
+        throw new Error("Connection request not found");
+      }
+
+      if (action === "accept") {
+        await tx.connection.createMany({
+          data: [
+            { fromId, toId, createdAt: new Date() },
+            { fromId: toId, toId: fromId, createdAt: new Date() },
+          ],
+        });
+      }
+
+      await tx.connectionRequest.delete({
+        where: { fromId_toId: { fromId, toId } },
+      });
     });
 
     return c.json({ success: true, message: `Connection request ${action}ed` });
@@ -227,26 +227,23 @@ connectionRoute.delete("/connections", async (c) => {
       return errorResponse(c, "Invalid or missing input data", null, 400);
     }
 
-    const connection = await prisma.connection.findFirst({
-      where: {
-        OR: [
-          { fromId: userId, toId: connectionToId },
-          { fromId: connectionToId, toId: userId },
-        ],
-      },
-    });
+    await prisma.$transaction(async (tx) => {
+      const connection = await tx.connection.findFirst({
+        where: { fromId: userId, toId: connectionToId },
+      });
 
-    if (!connection) {
-      return errorResponse(c, "Connection does not exist", null, 404);
-    }
+      if (!connection) {
+        throw new Error("Connection does not exist");
+      }
 
-    await prisma.connection.deleteMany({
-      where: {
-        OR: [
-          { fromId: userId, toId: connectionToId },
-          { fromId: connectionToId, toId: userId },
-        ],
-      },
+      await tx.connection.deleteMany({
+        where: {
+          OR: [
+            { fromId: userId, toId: connectionToId },
+            { fromId: connectionToId, toId: userId },
+          ],
+        },
+      });
     });
 
     return c.json({

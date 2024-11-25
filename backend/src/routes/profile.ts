@@ -26,6 +26,7 @@ profileRoute.get("/profile/:user_id", async (c) => {
       if (BigInt(currentUserId) === BigInt(targetUserId)) {
         accessLevel = "owner";
       } else {
+        // Just check one direction because connection is bidirectional
         const isConnected = await prisma.connection.findFirst({
           where: {
             fromId: BigInt(currentUserId),
@@ -134,15 +135,17 @@ profileRoute.put("/profile/:user_id", async (c) => {
     await fs.mkdir(uploadDir, { recursive: true });
 
     if (profilePhoto && typeof profilePhoto !== "string") {
+      //Not unique file name, so no need for deleting file (just overwrite)
+      const newPhotoName = `profile_photo_user_${userId}`;
       const filePath = path.join(
         uploadDir,
-        `user_${userId}_${Date.now()}_${profilePhoto.name}`
+        newPhotoName
       );
       await fs.writeFile(
         filePath,
         Buffer.from(await profilePhoto.arrayBuffer())
       );
-      updateData.profilePhotoPath = `/uploads/${path.basename(filePath)}`;
+      updateData.profilePhotoPath = `/uploads/${newPhotoName}`;
     }
 
     const updatedUser = await prisma.user.update({
