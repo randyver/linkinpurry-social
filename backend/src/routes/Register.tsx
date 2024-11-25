@@ -7,61 +7,37 @@ const registerRoute = new Hono();
 
 registerRoute.post("/register", async (c) => {
   try {
-    // Extract user data from the request body
-    const {
-      username,
-      email,
-      password,
-      workHistory = "",
-      skills = "",
-      profilePhotoPath = "",
-    } = await c.req.json();
+    const formData = await c.req.json();
+    const { username, name, email, password } = formData;
 
-    // Validate required fields
-    if (!username || !email || !password) {
-      return c.json(
-        {
-          success: false,
-          message: "Username, email, and password are required",
-        },
-        400
-      );
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user in the database
-    const newUser = await prisma.user.create({
-      data: {
-        username,
-        email,
-        name: username, // Set name to username as default
-        passwordHash: hashedPassword,
-        workHistory,
-        skills,
-        profilePhotoPath,
+    // Check if username or email already exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ username }, { email }],
       },
     });
 
-    // Convert BigInt to string for JSON serialization
-    const userResponse = {
-      ...newUser,
-      id: newUser.id.toString(),
-    };
+    if (existingUser) {
+      return c.json({ error: "Username or email already exists" }, 400);
+    }
 
-    return c.json({ success: true, data: userResponse }, 201);
-  } catch (error) {
-    console.error("Error creating user:", (error as Error).message);
+    // Hash password before saving to database
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    return c.json(
-      {
-        success: false,
-        message: "Failed to create user",
-        error: (error as Error).message,
+    const newUser = await prisma.user.create({
+      data: {
+        username,
+        name,
+        email,
+        passwordHash: hashedPassword,
+        profilePhotoPath: "",
       },
-      400
-    );
+    });
+
+    return c.json({ id: newUser.id.toString(), username: newUser.username }, 201);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: "Failed to create user" }, 500);
   }
 });
 
