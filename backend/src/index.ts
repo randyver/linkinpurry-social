@@ -5,7 +5,10 @@ import { cors } from 'hono/cors'
 // Import routes
 import registerRoute from './routes/Register.js'
 import loginRoute from './routes/Login.js'
+import logoutRoute from './routes/Logout.js'
 import usersRoute from './routes/Users.js'
+import checkSessionRoute from './routes/CheckSession.js'
+
 
 const app = new Hono()
 
@@ -16,6 +19,7 @@ app.use(
     origin: 'http://localhost:5173',
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type'],
+    credentials: true,
   })
 )
 
@@ -27,7 +31,9 @@ app.get('/', (c) => {
 // Tambahkan routes
 app.route('/api', registerRoute)
 app.route('/api', loginRoute)
+app.route('/api', logoutRoute)
 app.route('/api', usersRoute)
+app.route('/api', checkSessionRoute)
 
 // Start server
 const port = 3000

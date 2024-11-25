@@ -1,32 +1,44 @@
-import { PrismaClient } from '@prisma/client'
-import { Hono } from 'hono'
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from "@prisma/client";
+import { Hono } from "hono";
+import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient()
-const registerRoute = new Hono()
+const prisma = new PrismaClient();
+const registerRoute = new Hono();
 
-registerRoute.post('/register', async (c) => {
-  const { username, email, password } = await c.req.json()
-
+registerRoute.post("/register", async (c) => {
   try {
-    // Hash password sebelum menyimpan ke database
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const formData = await c.req.json();
+    const { username, name, email, password } = formData;
 
-    const newUser = await prisma.user.create({
-      data: { username, email, passwordHash: hashedPassword },
-    })
+    // Check if username or email already exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ username }, { email }],
+      },
+    });
 
-    // Konversi BigInt ke string
-    const userResponse = {
-      ...newUser,
-      id: newUser.id.toString(),
+    if (existingUser) {
+      return c.json({ error: "Username or email already exists" }, 400);
     }
 
-    return c.json(userResponse, 201)
-  } catch (error) {
-    console.error(error)
-    return c.json({ error: 'Failed to create user' }, 400)
-  }
-})
+    // Hash password before saving to database
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-export default registerRoute
+    const newUser = await prisma.user.create({
+      data: {
+        username,
+        name,
+        email,
+        passwordHash: hashedPassword,
+        profilePhotoPath: "",
+      },
+    });
+
+    return c.json({ id: newUser.id.toString(), username: newUser.username }, 201);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: "Failed to create user" }, 500);
+  }
+});
+
+export default registerRoute;
