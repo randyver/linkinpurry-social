@@ -47,14 +47,13 @@ app.route("/", publicRoutes);
 
 // Protected Routes
 const protectedRoutesValidateJWT = new Hono();
-protectedRoutesValidateJWT.use("/api/connections/*", validateJWT);
+protectedRoutesValidateJWT.use("/api/*", validateJWT);
 protectedRoutesValidateJWT.post("/api/connections/request", sendConnectionRequestHandler);
 protectedRoutesValidateJWT.get("/api/connections/requests", getConnectionRequestsHandler);
 protectedRoutesValidateJWT.post("/api/connections/requests/:action", acceptOrRejectRequestHandler);
 protectedRoutesValidateJWT.delete("/api/connections", deleteConnectionHandler);
 protectedRoutesValidateJWT.put("/api/profile/:user_id", updateProfileHandler)
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
-protectedRoutesValidateJWT.use("/api/check-session", validateJWT);
 app.route("/", protectedRoutesValidateJWT);
 
 const protectedRouteProfileAccess = new Hono();

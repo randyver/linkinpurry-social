@@ -32,7 +32,7 @@ export const getProfileHandler = async (c: Context) => {
       };
     }
 
-    const targetUser = await prisma.user.findUnique({
+    const targetUser: any = await prisma.user.findUnique({
       where: { id: BigInt(targetUserId) },
       select: userFields,
     });
@@ -45,7 +45,7 @@ export const getProfileHandler = async (c: Context) => {
       username: targetUser.username,
       name: targetUser.name,
       profile_photo: targetUser.profilePhotoPath,
-      connection_count: targetUser.connection_count,
+      connection_count: targetUser._count.sentConnections || 0,
       work_history: targetUser.workHistory,
       skills: targetUser.skills,
     };
@@ -107,7 +107,7 @@ export const updateProfileHandler = async (c: Context) => {
       skills: skills || "",
     };
 
-    const uploadDir = path.join(__dirname, "../uploads");
+    const uploadDir = "../uploads";
     await fs.mkdir(uploadDir, { recursive: true });
 
     if (profilePhoto && typeof profilePhoto !== "string") {
