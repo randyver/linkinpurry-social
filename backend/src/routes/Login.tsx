@@ -18,7 +18,7 @@ loginRoute.post('/login', async (c) => {
   const { email, password } = await c.req.json()
 
   try {
-    // Cari user berdasarkan email saja
+    // Based only by email
     const user = await prisma.user.findUnique({
       where: { email },
     })
@@ -37,14 +37,13 @@ loginRoute.post('/login', async (c) => {
       email: user.email,
     }
 
-    // Generate JWT token
     const token = jwt.sign(payload, SECRET_KEY, {
       algorithm: 'HS256',
       expiresIn: TOKEN_EXPIRATION,
     })
 
-    // Set token in cookie
-    c.header('Set-Cookie', `token=${token}; HttpOnly; Max-Age=${TOKEN_EXPIRATION}`)
+    // Set token in cookie (note: Add HttpOnly later)
+    c.header('Set-Cookie', `token=${token}; Max-Age=${TOKEN_EXPIRATION}`)
 
     return c.json({
       success: true,

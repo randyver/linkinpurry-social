@@ -1,7 +1,7 @@
-import type { UserPayload } from "./userPayload.js";
+import type { UserPayload } from './UserPayload.js';
 
-declare module "hono" {
-  interface Context {
+declare module 'hono' {
+  interface ContextVariableMap {
     user: UserPayload;
   }
 }
