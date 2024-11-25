@@ -14,10 +14,11 @@ import {
   acceptOrRejectRequestHandler,
   deleteConnectionHandler,
 } from "./routes/connection.js";
-import profileRoute from "./routes/profile.js";
+import { getProfileHandler, updateProfileHandler } from "./routes/profile.js";
 import checkSessionRoute from "./routes/check-session.js";
 
 import { validateJWT } from "./middleware/validateJWT.js";
+import { profileAccessMiddleware } from "./middleware/profileAccess.js";
 
 const app = new Hono();
 
@@ -45,18 +46,21 @@ publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
 app.route("/", publicRoutes);
 
 // Protected Routes
-const protectedRoutes = new Hono();
-protectedRoutes.use("/api/*", validateJWT);
-protectedRoutes.post("/api/connections/request", sendConnectionRequestHandler);
-protectedRoutes.get("/api/connections/requests", getConnectionRequestsHandler);
-protectedRoutes.post(
-  "/api/connections/requests/:action",
-  acceptOrRejectRequestHandler
-);
-protectedRoutes.delete("/api/connections", deleteConnectionHandler);
-protectedRoutes.route("/api", profileRoute);
-protectedRoutes.route("/api", checkSessionRoute);
-app.route("/", protectedRoutes);
+const protectedRoutesValidateJWT = new Hono();
+protectedRoutesValidateJWT.use("/api/connections/*", validateJWT);
+protectedRoutesValidateJWT.post("/api/connections/request", sendConnectionRequestHandler);
+protectedRoutesValidateJWT.get("/api/connections/requests", getConnectionRequestsHandler);
+protectedRoutesValidateJWT.post("/api/connections/requests/:action", acceptOrRejectRequestHandler);
+protectedRoutesValidateJWT.delete("/api/connections", deleteConnectionHandler);
+protectedRoutesValidateJWT.put("/api/profile/:user_id", updateProfileHandler)
+protectedRoutesValidateJWT.route("/api", checkSessionRoute);
+protectedRoutesValidateJWT.use("/api/check-session", validateJWT);
+app.route("/", protectedRoutesValidateJWT);
+
+const protectedRouteProfileAccess = new Hono();
+protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
+protectedRouteProfileAccess.use("/api/*", profileAccessMiddleware);
+app.route("/", protectedRouteProfileAccess);
 
 // Start server
 const port = 3000;
