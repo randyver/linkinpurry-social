@@ -2,25 +2,40 @@ import { useState } from "react";
 
 export default function Register() {
   const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [message, setMessage] = useState("");
 
   // Function to handle form submission
   const registerUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    // Validasi jika profile picture tidak diunggah
+    if (!profilePhoto) {
+      setMessage("Profile picture is required!");
+      return;
+    }
+
+    // Validasi passwords
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("profilePhoto", profilePhoto);
+
     try {
       const response = await fetch("http://localhost:3000/api/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -56,6 +71,19 @@ export default function Register() {
             />
           </div>
           <div className="mb-4">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-600">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+            />
+          </div>
+          <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-600">
               Email
             </label>
@@ -77,6 +105,32 @@ export default function Register() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-600">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="profilePhoto" className="block text-sm font-medium text-gray-600">
+              Profile Picture
+            </label>
+            <input
+              type="file"
+              id="profilePhoto"
+              accept="image/*"
+              onChange={(e) => setProfilePhoto(e.target.files?.[0] || null)}
               required
               className="mt-1 block w-full p-2 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring focus:ring-blue-200"
             />
