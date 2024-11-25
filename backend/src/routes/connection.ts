@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const connectionRoute = new Hono();
 
 /**
  * Utility function for error responses
@@ -29,18 +28,18 @@ function errorResponse(
 /**
  * Get list of connections
  */
-connectionRoute.get("/connections", async (c) => {
+export const getConnectionsHandler = async (c: any) => {
   try {
-    const user = c.get("user");
+    const userIdParam = c.req.param("user_id");
 
-    if (!user) {
-      return c.json({ success: false, message: "User not authenticated" }, 401);
+    if (!userIdParam || isNaN(parseInt(userIdParam, 10))) {
+      return c.json({ success: false, message: "Invalid user ID" }, 400);
     }
 
-    const userId = parseInt(user.userId, 10);
+    const targetUserId = parseInt(userIdParam, 10);
 
     const connections = await prisma.connection.findMany({
-      where: { fromId: userId },
+      where: { fromId: targetUserId },
       select: {
         toId: true,
         createdAt: true,
@@ -56,14 +55,17 @@ connectionRoute.get("/connections", async (c) => {
     return c.json({ success: true, data: formattedConnections });
   } catch (error) {
     console.error("Error fetching connections:", error);
-    return errorResponse(c, "Failed to fetch connections", error);
+    return c.json(
+      { success: false, message: "Failed to fetch connections" },
+      500
+    );
   }
-});
+};
 
 /**
  * Send a connection request
  */
-connectionRoute.post("/connections/request", async (c) => {
+export const sendConnectionRequestHandler = async (c: any) => {
   try {
     const { requestToId } = await c.req.json();
     const user = c.get("user");
@@ -122,13 +124,14 @@ connectionRoute.post("/connections/request", async (c) => {
     console.error("Error sending connection request:", error);
     return errorResponse(c, "Failed to send connection request", error);
   }
-});
+};
 
 /**
  * Get pending connection requests
  */
-connectionRoute.get("/connections/requests", async (c) => {
+export const getConnectionRequestsHandler = async (c: any) => {
   try {
+    console.log("hello")
     const user = c.get("user");
 
     if (!user) {
@@ -154,12 +157,12 @@ connectionRoute.get("/connections/requests", async (c) => {
     console.error("Error fetching connection requests:", error);
     return errorResponse(c, "Failed to fetch connection requests", error);
   }
-});
+};
 
 /**
  * Accept or reject a connection request
  */
-connectionRoute.post("/connections/requests/:action", async (c) => {
+export const acceptOrRejectRequestHandler = async (c: any) => {
   try {
     const action = c.req.param("action");
     const { fromId } = await c.req.json();
@@ -203,12 +206,12 @@ connectionRoute.post("/connections/requests/:action", async (c) => {
     console.error("Error processing connection request:", error);
     return errorResponse(c, "Failed to process connection request", error);
   }
-});
+};
 
 /**
  * Delete a connection
  */
-connectionRoute.delete("/connections", async (c) => {
+export const deleteConnectionHandler = async (c: any) => {
   try {
     const { connectionToId } = await c.req.json();
     const user = c.get("user");
@@ -254,6 +257,4 @@ connectionRoute.delete("/connections", async (c) => {
     console.error("Error deleting connection:", error);
     return errorResponse(c, "Failed to delete connection", error);
   }
-});
-
-export default connectionRoute;
+};
