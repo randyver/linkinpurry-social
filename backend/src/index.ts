@@ -3,13 +3,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 
 // Import routes
-import registerRoute from "./routes/Register.js";
-import loginRoute from "./routes/Login.js";
-import logoutRoute from "./routes/Logout.js";
+import registerRoute from "./routes/register.js";
+import loginRoute from "./routes/login.js";
+import logoutRoute from "./routes/logout.js";
 import usersSearchRoute from "./routes/user-search.js";
 import checkSessionRoute from "./routes/check-session.js";
-import userRoute from "./routes/User.js";
-import usersRoute from "./routes/Users.js";
+import userRoute from "./routes/user.js";
+import usersRoute from "./routes/users.js";
 
 //Import handlers
 import {
