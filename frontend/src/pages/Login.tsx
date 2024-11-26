@@ -61,8 +61,8 @@ export default function Login() {
       }
 
       toast.dismiss();
-      toast.success(`Welcome back, ${result.body.username}!`);
-      navigate("/dashboard");
+      toast.success(`Welcome back!`);
+      navigate("/");
     } catch (error) {
       toast.dismiss();
       toast.error(
