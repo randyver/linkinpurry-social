@@ -74,7 +74,7 @@ function Navbar() {
       if (response.ok) {
         setIsLoggedIn(false);
         setUser(null);
-        navigate("/");
+        navigate("/login");
       }
     } catch (error) {
       console.error("Error during logout:", error);
