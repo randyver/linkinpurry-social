@@ -120,13 +120,13 @@ function Navbar() {
               >
                 <UsersRound size={24} className="text-wbd-primary" />
                 <Link
-                  to=""
+                  to="/userlist"
                   className={`text-lg font-medium text-wbd-primary relative px-4`}
                 >
                   Explore
                   <span
                     className={`absolute -bottom-4 left-0 h-1 bg-wbd-primary transition-all duration-300 ${
-                      location.pathname === "" && hovered !== "requests"
+                      location.pathname === "/userlist" && hovered !== "requests"
                         ? "w-full"
                         : hovered === "explore"
                           ? "w-full"
@@ -138,10 +138,10 @@ function Navbar() {
             </div>
 
             <div className="relative flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
+              <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img
-                  src="/profile-image.png"
-                  alt="User's Profile"
+                  src="/default-profile-pic.png"
+                  alt="Default User's Profile"
                   className="w-full h-full object-cover"
                 />
               </div>
