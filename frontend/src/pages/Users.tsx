@@ -7,7 +7,7 @@ import { Button } from "../components/ui/button";
 interface User {
   id: number;
   username: string;
-  profilePicture: string; // For later
+  profilePhotoPath: string; // For later
 }
 
 interface CurrentUser {
@@ -123,7 +123,7 @@ export default function Users() {
       return;
     }
     const result = fuse.search(searchQuery);
-    setFilteredUsers(result.map((res) => res.item));
+    setFilteredUsers(result.map((res: any) => res.item));
   }, [searchQuery, fuse, users]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,7 +176,7 @@ export default function Users() {
               >
                 <div className="flex items-center space-x-4">
                   <img
-                    src={user.profilePicture || "/default-profile-pic.png"}
+                    src={user.profilePhotoPath? user.profilePhotoPath : "/default-profile-pic.png"}
                     alt={`${user.username}'s profile`}
                     className="w-16 h-16 rounded-full object-cover border border-gray-200 group-hover:scale-110 transition-transform"
                   />

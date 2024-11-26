@@ -14,6 +14,7 @@ import {
 interface User {
   username: string;
   email: string;
+  profilePhotoPath: string;
 }
 
 function Navbar() {
@@ -126,7 +127,8 @@ function Navbar() {
                   Explore
                   <span
                     className={`absolute -bottom-4 left-0 h-1 bg-wbd-primary transition-all duration-300 ${
-                      location.pathname === "/userlist" && hovered !== "requests"
+                      location.pathname === "/userlist" &&
+                      hovered !== "requests"
                         ? "w-full"
                         : hovered === "explore"
                           ? "w-full"
@@ -140,8 +142,14 @@ function Navbar() {
             <div className="relative flex items-center space-x-4">
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img
-                  src="/default-profile-pic.png"
-                  alt="Default User's Profile"
+                  src={
+                    user?
+                    user.profilePhotoPath
+                      ? user.profilePhotoPath
+                      : "/default-profile-pic.png"
+                      : "/default-profile-pic.png"
+                  }
+                  alt="User's Profile"
                   className="w-full h-full object-cover"
                 />
               </div>

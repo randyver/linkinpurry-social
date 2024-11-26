@@ -30,7 +30,7 @@ registerRoute.post("/register", async (c) => {
         name,
         email,
         passwordHash: hashedPassword,
-        profilePhotoPath: "",
+        profilePhotoPath: "https://pub-1220a31bae724d06910a9c77c9750e1a.r2.dev/profile_photos/default-profile-pic.png",
       },
     });
 

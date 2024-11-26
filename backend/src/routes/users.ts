@@ -1,13 +1,13 @@
-import { PrismaClient } from '@prisma/client';
-import { Hono } from 'hono';
+import { PrismaClient } from "@prisma/client";
+import { Hono } from "hono";
 
 const prisma = new PrismaClient();
 const usersRoute = new Hono();
 
-usersRoute.get('/users', async (c) => {
-  const page = parseInt(c.req.query('page') || '1');
-  const limit = parseInt(c.req.query('limit') || '10');
-  const excludeEmail = c.req.query('excludeEmail') || null;
+usersRoute.get("/users", async (c) => {
+  const page = parseInt(c.req.query("page") || "1");
+  const limit = parseInt(c.req.query("limit") || "10");
+  const excludeEmail = c.req.query("excludeEmail") || null;
 
   if (!excludeEmail) {
     console.error("Missing excludeEmail parameter");
@@ -32,6 +32,7 @@ usersRoute.get('/users', async (c) => {
         id: true,
         username: true,
         email: true,
+        profilePhotoPath: true,
       },
     });
 
@@ -47,7 +48,7 @@ usersRoute.get('/users', async (c) => {
         },
       },
     });
-    
+
     console.log("Fetched users:", usersFormatted);
     console.log("Total users:", totalUsers);
 
@@ -57,7 +58,7 @@ usersRoute.get('/users', async (c) => {
     });
   } catch (error) {
     console.error("Error fetching users:", error);
-    return c.json({ error: 'Failed to fetch users' }, 500);
+    return c.json({ error: "Failed to fetch users" }, 500);
   }
 });
 
