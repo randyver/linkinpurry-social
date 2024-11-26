@@ -1,9 +1,18 @@
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@prisma/client";
 import type { Context } from "hono";
-import fs from "fs/promises";
-import path from "path";
+import { getR2SignedUrl } from "../utils/s3Helper.js";
 
 const prisma = new PrismaClient();
+
+const s3 = new S3Client({
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+});
 
 export const getProfileHandler = async (c: Context) => {
   try {
@@ -107,21 +116,21 @@ export const updateProfileHandler = async (c: Context) => {
       skills: skills || "",
     };
 
-    const uploadDir = "../uploads";
-    await fs.mkdir(uploadDir, { recursive: true });
-
     if (profilePhoto && typeof profilePhoto !== "string") {
-      //Not unique file name, so no need for deleting file (just overwrite)
-      const newPhotoName = `profile_photo_user_${userId}`;
-      const filePath = path.join(
-        uploadDir,
-        newPhotoName
+      const fileBuffer = Buffer.from(await profilePhoto.arrayBuffer());
+      const fileKey = `profile_photos/user_${userId}`;
+
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: fileKey,
+          Body: fileBuffer,
+          ContentType: profilePhoto.type,
+        })
       );
-      await fs.writeFile(
-        filePath,
-        Buffer.from(await profilePhoto.arrayBuffer())
-      );
-      updateData.profilePhotoPath = `/uploads/${newPhotoName}`;
+
+      const publicUrl = `${process.env.R2_PUBLIC_URL}/${fileKey}`;
+      updateData.profilePhotoPath = publicUrl;
     }
 
     const updatedUser = await prisma.user.update({

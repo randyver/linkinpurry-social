@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Input } from "../components/ui/input";
 
 type ProfileData = {
@@ -24,21 +29,26 @@ export default function Profile() {
     name: "",
     work_history: "",
     skills: "",
+    profile_photo: null as File | null,
   });
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   if (!userId) {
     toast.error("User ID is required to view the profile.");
     return <div className="text-center text-red-500">User ID is missing.</div>;
   }
-  
+
   const fetchProfile = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/profile/${userId}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `http://localhost:3000/api/profile/${userId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch profile");
@@ -53,7 +63,12 @@ export default function Profile() {
           name: data.body.name || "",
           work_history: data.body.work_history || "",
           skills: data.body.skills || "",
+          profile_photo: null,
         });
+
+        if (data.body.profile_photo) {
+          setPhotoUrl(data.body.profile_photo);
+        }
       }
 
       toast.success("Profile fetched successfully");
@@ -65,7 +80,6 @@ export default function Profile() {
     }
   };
 
-  // Update profile data
   const updateProfile = async () => {
     const toastId = toast.loading("Updating profile...");
     try {
@@ -75,11 +89,18 @@ export default function Profile() {
       form.append("work_history", formData.work_history);
       form.append("skills", formData.skills);
 
-      const response = await fetch(`http://localhost:3000/api/profile/${userId}`, {
-        method: "PUT",
-        credentials: "include",
-        body: form,
-      });
+      if (formData.profile_photo) {
+        form.append("profile_photo", formData.profile_photo);
+      }
+
+      const response = await fetch(
+        `http://localhost:3000/api/profile/${userId}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          body: form,
+        },
+      );
 
       if (!response.ok) {
         throw new Error("Failed to update profile");
@@ -87,7 +108,7 @@ export default function Profile() {
 
       toast.success("Profile updated successfully");
       setIsEditing(false);
-      fetchProfile(); // Refresh profile data
+      fetchProfile();
     } catch (error) {
       console.error(error);
       toast.error("Error updating profile");
@@ -120,7 +141,10 @@ export default function Profile() {
                     type="text"
                     value={formData.username}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, username: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        username: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -140,7 +164,10 @@ export default function Profile() {
                     type="text"
                     value={formData.work_history}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, work_history: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        work_history: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -150,14 +177,35 @@ export default function Profile() {
                     type="text"
                     value={formData.skills}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, skills: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        skills: e.target.value,
+                      }))
                     }
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-1">Profile Photo</label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          profile_photo: e.target.files![0],
+                        }));
+                      }
+                    }}
                   />
                 </div>
                 <Button onClick={updateProfile} className="mr-2">
                   Save
                 </Button>
-                <Button variant="destructive" onClick={() => setIsEditing(false)}>
+                <Button
+                  variant="destructive"
+                  onClick={() => setIsEditing(false)}
+                >
                   Cancel
                 </Button>
               </>
@@ -178,6 +226,13 @@ export default function Profile() {
                 <p>
                   <strong>Connection Count:</strong> {profile.connection_count}
                 </p>
+                {photoUrl && (
+                  <img
+                    src={photoUrl}
+                    alt="Profile"
+                    className="w-20 h-20 rounded-full mt-4"
+                  />
+                )}
                 {profile.relevant_posts && (
                   <div>
                     <strong>Relevant Posts:</strong>

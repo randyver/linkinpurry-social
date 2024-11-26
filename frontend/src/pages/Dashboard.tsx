@@ -58,7 +58,7 @@ export default function Dashboard() {
         {user ? (
           <div>
             <p className="text-gray-700">Welcome, {user.email}</p>
-            <p className="mt-4 text-sm text-gray-500">User ID: {user.id}</p>
+            <p className="mt-4 text-sm text-gray-500">User ID: {user.userId}</p>
             <div className="mt-6">
               <button
                 onClick={handleLogout}

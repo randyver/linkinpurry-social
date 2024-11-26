@@ -19,6 +19,7 @@ import checkSessionRoute from "./routes/check-session.js";
 
 import { validateJWT } from "./middleware/validateJWT.js";
 import { profileAccessMiddleware } from "./middleware/profileAccess.js";
+import { getSignedUrlHandler } from "./routes/get-url.js";
 
 const app = new Hono();
 
@@ -42,6 +43,7 @@ publicRoutes.route("/api", registerRoute);
 publicRoutes.route("/api", loginRoute);
 publicRoutes.route("/api", logoutRoute);
 publicRoutes.route("/api", usersSearchRoute);
+publicRoutes.get("/api/get-url", getSignedUrlHandler);
 publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
 app.route("/", publicRoutes);
 
