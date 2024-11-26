@@ -1,58 +1,223 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import Fuse from "fuse.js";
+
+import { Search } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 interface User {
   id: number;
   username: string;
+  profilePhotoPath: string; // For later
+}
+
+interface CurrentUser {
   email: string;
 }
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observerRef = useRef<HTMLDivElement | null>(null);
+  const fetchedPages = useRef<Set<number>>(new Set());
+  const [fuse, setFuse] = useState<Fuse<User> | null>(null);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchSession = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/users");
-        const data = await response.json();
-        setUsers(data);
+        const sessionResponse = await fetch("http://localhost:3000/api/check-session", {
+          method: "GET",
+          credentials: "include",
+        });
+        
+        if (sessionResponse.ok) {
+          const sessionData = await sessionResponse.json();
+          setIsLoggedIn(true);
+          setCurrentUser(sessionData.user);
+        }
       } catch (error) {
-        console.error("Failed to fetch users", error);
+        console.error("Failed to fetch session:", error);
+      } finally {
+        setIsSessionLoading(false);
+      }
+    };
+
+    fetchSession();
+  }, []);
+
+  useEffect(() => {
+    console.log("Current user changed:", currentUser);
+    fetchedPages.current.clear();
+    setPage(1);
+    setUsers([]);
+    setHasMore(true);
+  }, [currentUser]);
+
+  useEffect(() => {
+    const fetchUsers = async (page: number) => {
+      console.log("Fetching users for page:", page);
+      console.log("Current user:", currentUser?.email);
+      console.log("Loading:", loading);
+      if (!currentUser?.email || fetchedPages.current.has(page)) return;
+
+      setLoading(true);
+      fetchedPages.current.add(page);
+
+      console.log("Fetching users for page:", page);
+
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/users?page=${page}&limit=10&excludeEmail=${currentUser.email}`,
+        );
+
+        console.log("Fetched users response:", response);
+        const data = await response.json();
+
+        console.log("Fetched users:", data.users);
+
+        if (data.users.length > 0) {
+          setUsers((prevUsers) => {
+            const mergedUsers = [...prevUsers, ...data.users];
+            return Array.from(
+              new Map(mergedUsers.map((user) => [user.id, user])).values(),
+            );
+          });
+        }
+
+        if (data.users.length < 10) {
+          setHasMore(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
-  }, []);
+    if (!isSessionLoading && currentUser) {
+      fetchUsers(page);
+    }
+  }, [page, isSessionLoading, currentUser]);
+
+  useEffect(() => {
+    if (users.length > 0) {
+      const options = {
+        keys: ["username"],
+        threshold: 0.4,
+        distance: 100,
+        minMatchCharLength: 2,
+      };
+      setFuse(new Fuse(users, options));
+    }
+  }, [users]);
+
+  useEffect(() => {
+    if (!searchQuery || !fuse) {
+      setFilteredUsers(users);
+      return;
+    }
+    const result = fuse.search(searchQuery);
+    setFilteredUsers(result.map((res: any) => res.item));
+  }, [searchQuery, fuse, users]);
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value.toLowerCase());
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      },
+      { threshold: 1.0 },
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [hasMore, loading]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 p-8">
-      {/* User List */}
-      <section className="bg-white shadow-lg rounded-lg p-6 mx-auto max-w-4xl">
-        <h2 className="text-2xl font-bold text-blue-700 mb-4">List of Users</h2>
-        {loading ? (
-          <p className="text-blue-500 text-center">Loading...</p>
-        ) : users.length > 0 ? (
-          <ul className="space-y-4">
-            {users.map((user) => (
-              <li
+    <div className="min-h-screen bg-wbd-background pt-20 px-8">
+      <section className="p-6 mx-auto max-w-7xl space-y-8">
+        <div className="relative max-w-lg mx-auto">
+          <div className="absolute inset-y-0 left-3 flex items-center">
+            <Search className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleSearch}
+            placeholder="Search for users..."
+            className="w-full border border-gray-300 rounded-full pl-12 p-3 text-wbd-text placeholder-gray-400 shadow-md focus:outline-none focus:ring-2 focus:ring-wbd-tertiary focus:border-transparent transition-shadow duration-200"
+          />
+        </div>
+
+        {filteredUsers.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredUsers.map((user) => (
+              <div
                 key={user.id}
-                className="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200 flex justify-between items-center"
+                className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-transform duration-300 p-6 flex flex-col justify-between group"
               >
-                <div>
-                  <strong className="text-blue-700">{user.username}</strong>
-                  <p className="text-blue-600 text-sm">{user.email}</p>
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={user.profilePhotoPath? user.profilePhotoPath : "/default-profile-pic.png"}
+                    alt={`${user.username}'s profile`}
+                    className="w-16 h-16 rounded-full object-cover border border-gray-200 group-hover:scale-110 transition-transform"
+                  />
+                  <strong className="text-lg font-semibold text-wbd-text">
+                    {user.username}
+                  </strong>
                 </div>
-                <button className="text-sm bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition">
-                  View Profile
-                </button>
-              </li>
+                {isLoggedIn && (
+                  <div className="flex justify-end mt-6">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="shadow-md hover:shadow-lg hover:scale-105 transition-all"
+                    >
+                      View Profile
+                    </Button>
+                  </div>
+                )}
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p className="text-blue-600 text-center">No users found.</p>
+          !loading &&
+          filteredUsers.length === 0 && (
+            <div className="flex flex-col items-center space-y-4 mt-48">
+              <p className="text-xl text-wbd-primary text-center font-medium">
+                No user found.
+              </p>
+            </div>
+          )
         )}
+
+        {loading && (
+          <div className="flex justify-center space-x-2 mt-20">
+            <div className="w-6 h-6 bg-wbd-highlight rounded-full animate-bounce"></div>
+            <div className="w-6 h-6 bg-wbd-highlight rounded-full animate-bounce delay-100"></div>
+            <div className="w-6 h-6 bg-wbd-highlight rounded-full animate-bounce delay-200"></div>
+          </div>
+        )}
+
+        <div ref={observerRef} className="h-1"></div>
       </section>
     </div>
   );
