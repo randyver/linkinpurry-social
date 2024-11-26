@@ -15,6 +15,7 @@ userRoute.get("/user", async (c) => {
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
+        id: true,
         username: true,
         email: true,
         profilePhotoPath: true,
@@ -25,7 +26,12 @@ userRoute.get("/user", async (c) => {
       return c.json({ error: "User not found" }, 404);
     }
 
-    return c.json(user);
+    const response = {
+      ...user,
+      id: user.id.toString(),
+    };
+
+    return c.json(response);
   } catch (error) {
     console.error(error);
     return c.json({ error: "Failed to fetch user" }, 500);

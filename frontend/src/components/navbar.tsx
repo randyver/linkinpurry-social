@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 interface User {
+  id: string;
   username: string;
   email: string;
   profilePhotoPath: string;
@@ -47,6 +48,7 @@ function Navbar() {
 
           if (userResponse.ok) {
             const userData = await userResponse.json();
+            console.log(userData);
             setUser(userData);
           }
         } else {
@@ -142,13 +144,7 @@ function Navbar() {
             <div className="relative flex items-center space-x-4">
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img
-                  src={
-                    user?
-                    user.profilePhotoPath
-                      ? user.profilePhotoPath
-                      : "/default-profile-pic.png"
-                      : "/default-profile-pic.png"
-                  }
+                  src={user?.profilePhotoPath}
                   alt="User's Profile"
                   className="w-full h-full object-cover"
                 />
@@ -167,7 +163,7 @@ function Navbar() {
               {dropdownOpen && (
                 <div className="absolute top-full right-0 mt-4 bg-white shadow-lg rounded-md w-40 z-10">
                   <Link
-                    to="/profile"
+                    to={`/profile/${user?.id}`}
                     className="block px-4 py-2 text-wbd-primary text-sm hover:bg-gray-100"
                   >
                     Profile

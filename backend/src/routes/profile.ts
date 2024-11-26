@@ -14,6 +14,9 @@ const s3 = new S3Client({
   },
 });
 
+/**
+ * Get Profile
+ */
 export const getProfileHandler = async (c: Context) => {
   try {
     const userIdParam = c.req.param("user_id");

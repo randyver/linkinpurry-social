@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Fuse from "fuse.js";
 
 import { Search } from "lucide-react";
@@ -7,7 +8,7 @@ import { Button } from "../components/ui/button";
 interface User {
   id: number;
   username: string;
-  profilePhotoPath: string; // For later
+  profilePhotoPath: string;
 }
 
 interface CurrentUser {
@@ -15,6 +16,8 @@ interface CurrentUser {
 }
 
 export default function Users() {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -187,6 +190,7 @@ export default function Users() {
                 {isLoggedIn && (
                   <div className="flex justify-end mt-6">
                     <Button
+                      onClick={() => navigate(`/profile/${user.id}`)}
                       variant="default"
                       size="sm"
                       className="shadow-md hover:shadow-lg hover:scale-105 transition-all"
