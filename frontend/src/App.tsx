@@ -7,6 +7,9 @@ import Login from "./pages/Login";
 import Users from "./pages/Users";
 import Dashboard from "./pages/Dashboard";
 import { Toaster } from "react-hot-toast";
+import Connections from "./pages/Connections";
+import Profile from "./pages/Profile";
+import Footer from "./components/footer";
 
 function App() {
   return (
@@ -19,7 +22,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/userlist" element={<Users/>} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/connections/user/:userId" element={<Connections />} />
+        <Route path="/profile/:userId" element={<Profile />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }
