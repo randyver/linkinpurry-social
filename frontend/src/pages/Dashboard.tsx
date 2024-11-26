@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ProfileCard } from "../components/profile-card";
+import { FeedCard } from "../components/feed-card";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../components/ui/card";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
-  const [message, setMessage] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/check-session", {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await fetch(
+          "http://localhost:3000/api/check-session",
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
 
         if (!response.ok) {
           navigate("/login");
@@ -23,7 +34,6 @@ export default function Dashboard() {
         setUser(data.user);
       } catch (error) {
         console.error("Error checking session:", error);
-        setMessage("Error checking login status.");
       }
     };
 
@@ -40,37 +50,99 @@ export default function Dashboard() {
       if (response.ok) {
         navigate("/login");
       } else {
-        setMessage("Logout failed");
+        console.error("Failed to logout");
       }
     } catch (error) {
       console.error("Error logging out:", error);
-      setMessage("Error logging out");
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-gray-700">Dashboard</h2>
-
-        {message && <p className="text-sm text-red-500">{message}</p>}
-
-        {user ? (
-          <div>
-            <p className="text-gray-700">Welcome, {user.email}</p>
-            <p className="mt-4 text-sm text-gray-500">User ID: {user.id}</p>
-            <div className="mt-6">
-              <button
+    <div className="min-h-screen bg-wbd-background">
+      <div className="flex justify-between max-w-7xl mx-auto p-4 space-x-6">
+        {/* Sidebar Kiri */}
+        {user && (
+          <div className="w-1/4">
+            <ProfileCard
+              username={user.username}
+              email={user.email}
+              fullName={user.fullname}
+              profilePhotoPath="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
+              connections={0}
+            />
+            <div className="mt-4">
+              <Button
+                className="bg-red-500 text-white w-full"
                 onClick={handleLogout}
-                className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700 transition duration-200"
               >
                 Logout
-              </button>
+              </Button>
             </div>
           </div>
-        ) : (
-          <p className="text-gray-500">Loading user information...</p>
         )}
+
+        {/* Konten Utama */}
+        <div className="w-1/2 space-y-6">
+          {/* Area untuk membuat post */}
+          <Card className="p-4 flex items-center">
+            <img
+              src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
+              alt="Profile"
+              className="w-12 h-12 rounded-full mr-4"
+            />
+            <Button className="flex-grow bg-gray-200 text-gray-600 hover:bg-gray-300">
+              Start a post, try writing with AI
+            </Button>
+          </Card>
+
+          {/* Line dan sorting feed */}
+          <div className="flex justify-between items-center text-sm text-gray-500">
+            <hr className="flex-grow border-gray-300" />
+            <span className="px-2">Sort by: Top</span>
+          </div>
+
+          {/* Feed */}
+          <FeedCard
+            title="Hello, World!"
+            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur non felis sit amet libero volutpat commodo."
+            date="26 November 2024"
+          />
+          <FeedCard
+            title="New Feature Released!"
+            description="Check out the latest updates to our platform. We’re introducing AI-powered writing tools to enhance your experience!"
+            date="25 November 2024"
+          />
+          <FeedCard
+            title="Weekly Highlights"
+            description="Here are some key moments from the past week: record-breaking user engagement and exciting new partnerships!"
+            date="24 November 2024"
+          />
+        </div>
+
+        {/* Sidebar Kanan */}
+        <div className="w-1/4 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Who to follow</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4">
+                <img
+                  src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
+                  alt="Profile"
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <h2 className="text-lg font-semibold">John Doe</h2>
+                  <p className="text-sm text-gray-500">Software Engineer</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Button className="w-full bg-blue-500 text-white">Follow</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
