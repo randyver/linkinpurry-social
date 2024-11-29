@@ -25,8 +25,10 @@ import { getSignedUrlHandler } from "./routes/get-url.js";
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
 import { profileAccessMiddleware } from "./middleware/profileAccess.js";
+import { Server } from "socket.io";
+import { Server as HttpServer } from "http";
 
-const app = new Hono();
+export const app = new Hono();
 
 // Middleware CORS
 app.use(
@@ -79,8 +81,14 @@ protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
 protectedRouteProfileAccess.use("/api/*", profileAccessMiddleware);
 app.route("/", protectedRouteProfileAccess);
 
-// Start server
 const port = 3000;
-console.log(`Server running on http://localhost:${port}`);
 
-serve({ fetch: app.fetch, port });
+const server = serve({ fetch: app.fetch, port: port }, (info) => {
+  console.log(`Server running on http://localhost:${info.port}`);
+});
+
+export const io = new Server(server as HttpServer, {
+  path: "/ws",
+  serveClient: false,
+  transports: ["websocket"],
+});
