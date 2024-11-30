@@ -11,6 +11,7 @@ interface AddFeedProps {
 const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
+  const maxLength = 280;
 
   const handlePost = async () => {
     if (postContent.trim()) {
@@ -44,6 +45,11 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
     }
   };
 
+  const characterCountMessage =
+    postContent.length > maxLength
+      ? "Feed content cannot exceed 280 characters"
+      : `${postContent.length}/${maxLength}`;
+
   return (
     <div className="relative">
       {/* Trigger Button */}
@@ -63,7 +69,7 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
               onClick={() => setIsOpen(false)}
               className="absolute top-4 right-4 text-xl cursor-pointer"
             >
-              <X size={24} /> {/* Ikon close dari lucide-react */}
+              <X size={24} /> {/* Icon close from lucide-react */}
             </span>
 
             {/* User Profile Info */}
@@ -74,7 +80,7 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
                 className="w-12 h-12 rounded-full mr-4"
               />
               <div>
-                {/* Menampilkan fullname yang diterima dari props */}
+                {/* Display fullname passed from props */}
                 <p className="font-semibold">{fullname}</p>
               </div>
             </div>
@@ -82,17 +88,22 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
             {/* Text Area */}
             <Textarea
               placeholder="What do you want to talk about?"
-              className="w-full h-[300px] resize-none p-2 bg-transparent focus:ring-0 focus:outline-none" // Tidak ada border, latar belakang transparan, dan tanpa efek fokus
+              className="w-full h-[300px] resize-none p-2 bg-transparent focus:ring-0 focus:outline-none"
               value={postContent}
               onChange={(e) => setPostContent(e.target.value)}
             />
+
+            {/* Character count and button */}
+            <div className="mt-2 text-sm text-gray-500">
+              {characterCountMessage}
+            </div>
 
             {/* Footer Button */}
             <div className="flex justify-end mt-4">
               <Button
                 onClick={handlePost}
-                className={`rounded-2xl ${postContent.trim() ? '' : 'bg-gray-300 text-gray-500'}`}
-                disabled={!postContent.trim()}
+                className={`rounded-2xl ${postContent.length > maxLength ? 'bg-gray-300 text-gray-500' : ''}`}
+                disabled={postContent.length > maxLength || !postContent.trim()}
               >
                 Post
               </Button>
