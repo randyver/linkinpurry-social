@@ -1,10 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { Hono } from "hono";
+import type { Context } from "hono";
 
 const prisma = new PrismaClient();
-const addFeedRoute = new Hono();
 
-addFeedRoute.post("/add-feed", async (c) => {
+export const addFeedRoute = async (c: Context) => {
   try {
     const { content, userId } = await c.req.json();
 
@@ -21,6 +20,4 @@ addFeedRoute.post("/add-feed", async (c) => {
     console.error(error);
     return c.json({ error: "Failed to create feed" }, 500);
   }
-});
-
-export default addFeedRoute;
+};

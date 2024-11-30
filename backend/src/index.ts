@@ -10,8 +10,6 @@ import usersSearchRoute from "./routes/user-search.js";
 import checkSessionRoute from "./routes/check-session.js";
 import userRoute from "./routes/user.js";
 import usersRoute from "./routes/users.js";
-import addFeedRoute from "./routes/add-feed.js";
-import feedsRoute from "./routes/feeds.js";
 
 //Import handlers
 import {
@@ -23,6 +21,8 @@ import {
 } from "./routes/connection.js";
 import { getProfileHandler, updateProfileHandler } from "./routes/profile.js";
 import { getSignedUrlHandler } from "./routes/get-url.js";
+import { addFeedRoute } from "./routes/add-feed.js";
+import { feedsRoute } from "./routes/feeds.js";
 
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
@@ -54,8 +54,11 @@ publicRoutes.route("/api", userRoute);
 publicRoutes.route("/api", usersRoute);
 publicRoutes.get("/api/get-url", getSignedUrlHandler);
 publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
-publicRoutes.route("/api", addFeedRoute);
-publicRoutes.route("/api", feedsRoute);
+
+// Feeds Routes
+publicRoutes.get("/api/feeds", feedsRoute);
+publicRoutes.post("/api/add-feed", addFeedRoute);
+
 app.route("/", publicRoutes);
 
 // Protected Routes

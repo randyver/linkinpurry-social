@@ -1,10 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { Hono } from "hono";
+import type { Context } from "hono";
 
 const prisma = new PrismaClient();
-const feedsRoute = new Hono();
 
-feedsRoute.get("/feeds", async (c) => {
+export const feedsRoute = async (c: Context) => {
   try {
     // Ambil userId dari query parameter
     const userId = c.req.query("userId");
@@ -70,6 +69,4 @@ feedsRoute.get("/feeds", async (c) => {
     console.error(error);
     return c.json({ error: "Failed to fetch feeds" }, 500);
   }
-});
-
-export default feedsRoute;
+};
