@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Fuse from "fuse.js";
 
 import { Search } from "lucide-react";
@@ -17,6 +17,7 @@ interface CurrentUser {
 
 export default function Users() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -34,11 +35,14 @@ export default function Users() {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const sessionResponse = await fetch("http://localhost:3000/api/check-session", {
-          method: "GET",
-          credentials: "include",
-        });
-        
+        const sessionResponse = await fetch(
+          "http://localhost:3000/api/check-session",
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
+
         if (sessionResponse.ok) {
           const sessionData = await sessionResponse.json();
           setIsLoggedIn(true);
@@ -76,7 +80,7 @@ export default function Users() {
 
       try {
         const response = await fetch(
-          `http://localhost:3000/api/users?page=${page}&limit=10&excludeEmail=${currentUser.email}`,
+          `http://localhost:3000/api/users?page=${page}&limit=15&excludeEmail=${currentUser.email}`,
         );
 
         console.log("Fetched users response:", response);
@@ -129,6 +133,22 @@ export default function Users() {
     setFilteredUsers(result.map((res: any) => res.item));
   }, [searchQuery, fuse, users]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (searchQuery) {
+      params.set("search", searchQuery);
+    } else {
+      params.delete("search");
+    }
+    navigate(`?${params.toString()}`, { replace: true });
+  }, [searchQuery, navigate, location.search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const query = params.get("search") || "";
+    setSearchQuery(query.toLowerCase());
+  }, [location.search]);
+
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value.toLowerCase());
   };
@@ -179,9 +199,13 @@ export default function Users() {
               >
                 <div className="flex items-center space-x-4">
                   <img
-                    src={user.profilePhotoPath? user.profilePhotoPath : "/default-profile-pic.png"}
+                    src={
+                      user.profilePhotoPath
+                        ? user.profilePhotoPath
+                        : "/default-profile-pic.png"
+                    }
                     alt={`${user.username}'s profile`}
-                    className="w-16 h-16 rounded-full object-cover border border-gray-200 group-hover:scale-110 transition-transform"
+                    className="w-16 h-16 rounded-full object-cover border border-gray-200"
                   />
                   <strong className="text-lg font-semibold text-wbd-text">
                     {user.username}
@@ -193,7 +217,6 @@ export default function Users() {
                       onClick={() => navigate(`/profile/${user.id}`)}
                       variant="default"
                       size="sm"
-                      className="shadow-md hover:shadow-lg hover:scale-105 transition-all"
                     >
                       View Profile
                     </Button>

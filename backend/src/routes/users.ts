@@ -9,25 +9,24 @@ usersRoute.get("/users", async (c) => {
   const limit = parseInt(c.req.query("limit") || "10");
   const excludeEmail = c.req.query("excludeEmail") || null;
 
-  if (!excludeEmail) {
-    console.error("Missing excludeEmail parameter");
-    return c.json({ error: "excludeEmail parameter is required" }, 400);
-  }
-
   const skip = (page - 1) * limit;
 
   try {
     console.log("Pagination details:", { skip, limit });
     console.log("Exclude email:", excludeEmail);
 
+    const whereClause = excludeEmail
+      ? {
+          email: {
+            not: excludeEmail,
+          },
+        }
+      : {};
+
     const users = await prisma.user.findMany({
       skip,
       take: limit,
-      where: {
-        email: {
-          not: excludeEmail,
-        },
-      },
+      where: whereClause,
       select: {
         id: true,
         username: true,
@@ -42,11 +41,7 @@ usersRoute.get("/users", async (c) => {
     }));
 
     const totalUsers = await prisma.user.count({
-      where: {
-        email: {
-          not: excludeEmail,
-        },
-      },
+      where: whereClause,
     });
 
     console.log("Fetched users:", usersFormatted);
