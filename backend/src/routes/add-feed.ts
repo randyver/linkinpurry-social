@@ -12,7 +12,7 @@ addFeedRoute.post("/add-feed", async (c) => {
       data: {
         content,
         userId,
-        updatedAt: new Date(),
+        createdAt: new Date(),
       },
     });
 
@@ -23,4 +23,4 @@ addFeedRoute.post("/add-feed", async (c) => {
   }
 });
 
-export { addFeedRoute };
+export default addFeedRoute;
