@@ -19,25 +19,27 @@ export default function Home() {
           method: "GET",
           credentials: "include",
         });
-
+  
         if (!response.ok) {
           navigate("/login");
           return;
         }
-
+  
         const data = await response.json();
         setUser(data.user);
       } catch (error) {
         console.error("Error checking session:", error);
       }
     };
-
+  
     const fetchFeeds = async () => {
+      if (!user) return;
+  
       try {
-        const response = await fetch("http://localhost:3000/api/feeds", {
+        const response = await fetch(`http://localhost:3000/api/feeds?userId=${user.userId}`, {
           method: "GET",
         });
-
+  
         if (response.ok) {
           const data = await response.json();
           console.log("Feeds:", data);
@@ -51,10 +53,10 @@ export default function Home() {
         setLoading(false);
       }
     };
-
+  
     checkLoginStatus();
-    fetchFeeds();
-  }, [navigate]);
+    if (user) fetchFeeds();
+  }, [navigate, user]);  
 
   return (
     <div className="min-h-screen bg-wbd-background pt-20">
