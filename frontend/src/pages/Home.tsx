@@ -9,6 +9,7 @@ import {
   CardTitle,
   CardContent,
 } from "../components/ui/card";
+import AddPost from "../components/add-post";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -65,9 +66,7 @@ export default function Home() {
               alt="Profile"
               className="w-12 h-12 rounded-full mr-4"
             />
-            <Button className="flex-grow bg-gray-200 text-gray-600">
-              Start a post, try writing with AI
-            </Button>
+            {user && <AddPost fullname={user.fullname} />}
           </Card>
 
           {/* Line dan sorting feed */}
