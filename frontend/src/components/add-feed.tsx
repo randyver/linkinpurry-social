@@ -1,22 +1,44 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea"; // Sesuaikan jika Anda menggunakan library khusus
-import { X } from "lucide-react"; // Import ikon X dari lucide-react
+import { Textarea } from "./ui/textarea";
+import { X } from "lucide-react";
 
-// Tambahkan parameter fullname ke dalam props
-interface AddPostProps {
+interface AddFeedProps {
   fullname: string;
+  userId: number;
 }
 
-const AddPost: React.FC<AddPostProps> = ({ fullname }) => {
+const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (postContent.trim()) {
-      console.log("Posting:", postContent); // Ganti dengan API request untuk menambah post
-      setPostContent("");
-      setIsOpen(false);
+      try {
+        const response = await fetch("http://localhost:3000/api/add-feed", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: postContent,
+            userId: userId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create feed");
+        }
+
+        const data = await response.json();
+        console.log("Feed created:", data);
+
+        setPostContent("");
+        setIsOpen(false);
+      } catch (error) {
+        console.error("Error posting feed:", error);
+        alert("Failed to create post");
+      }
     } else {
       alert("Please write something before posting.");
     }
@@ -82,4 +104,4 @@ const AddPost: React.FC<AddPostProps> = ({ fullname }) => {
   );
 };
 
-export default AddPost;
+export default AddFeed;

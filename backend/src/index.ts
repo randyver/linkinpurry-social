@@ -10,6 +10,7 @@ import usersSearchRoute from "./routes/user-search.js";
 import checkSessionRoute from "./routes/check-session.js";
 import userRoute from "./routes/user.js";
 import usersRoute from "./routes/users.js";
+import { addFeedRoute } from "./routes/add-feed.js";
 
 //Import handlers
 import {
@@ -52,6 +53,7 @@ publicRoutes.route("/api", userRoute);
 publicRoutes.route("/api", usersRoute);
 publicRoutes.get("/api/get-url", getSignedUrlHandler);
 publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
+publicRoutes.route("/api", addFeedRoute);
 app.route("/", publicRoutes);
 
 // Protected Routes

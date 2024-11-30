@@ -9,7 +9,7 @@ import {
   CardTitle,
   CardContent,
 } from "../components/ui/card";
-import AddPost from "../components/add-post";
+import AddFeed from "../components/add-feed";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -66,7 +66,7 @@ export default function Home() {
               alt="Profile"
               className="w-12 h-12 rounded-full mr-4"
             />
-            {user && <AddPost fullname={user.fullname} />}
+            {user && <AddFeed fullname={user.fullname} userId={user.userId} />}
           </Card>
 
           {/* Line dan sorting feed */}
