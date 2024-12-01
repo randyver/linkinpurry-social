@@ -1,5 +1,5 @@
-import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
+import type { Context } from "hono";
 
 const prisma = new PrismaClient();
 
@@ -28,7 +28,7 @@ function errorResponse(
 /**
  * Get list of connections
  */
-export const getConnectionsHandler = async (c: any) => {
+export const getConnectionsHandler = async (c: Context) => {
   try {
     const userIdParam = c.req.param("user_id");
 
@@ -46,11 +46,29 @@ export const getConnectionsHandler = async (c: any) => {
       },
     });
 
-    const formattedConnections = connections.map((connection) => ({
-      ...connection,
-      toId: connection.toId.toString(),
-      createdAt: connection.createdAt.toISOString(),
-    }));
+    const userDetailsPromises = connections.map(async (connection) => {
+      const user = await prisma.user.findUnique({
+        where: { id: connection.toId },
+        select: {
+          username: true,
+          profilePhotoPath: true,
+        },
+      });
+
+      if (user) {
+        return {
+          id: connection.toId.toString(),
+          username: user.username,
+          profilePhotoPath: user.profilePhotoPath || "/default-avatar.png",
+          createdAt: connection.createdAt.toISOString(),
+        };
+      } else {
+        return null;
+      }
+    });
+
+    const userDetails = await Promise.all(userDetailsPromises);
+    const formattedConnections = userDetails.filter((user) => user !== null);
 
     return c.json({ success: true, data: formattedConnections });
   } catch (error) {
@@ -65,7 +83,7 @@ export const getConnectionsHandler = async (c: any) => {
 /**
  * Send a connection request
  */
-export const sendConnectionRequestHandler = async (c: any) => {
+export const sendConnectionRequestHandler = async (c: Context) => {
   try {
     const { requestToId } = await c.req.json();
     const user = c.get("user");
@@ -129,9 +147,9 @@ export const sendConnectionRequestHandler = async (c: any) => {
 /**
  * Get pending connection requests
  */
-export const getConnectionRequestsHandler = async (c: any) => {
+export const getConnectionRequestsHandler = async (c: Context) => {
   try {
-    console.log("hello")
+    console.log("hello");
     const user = c.get("user");
 
     if (!user) {
@@ -162,7 +180,7 @@ export const getConnectionRequestsHandler = async (c: any) => {
 /**
  * Accept or reject a connection request
  */
-export const acceptOrRejectRequestHandler = async (c: any) => {
+export const acceptOrRejectRequestHandler = async (c: Context) => {
   try {
     const action = c.req.param("action");
     const { fromId } = await c.req.json();
@@ -211,7 +229,7 @@ export const acceptOrRejectRequestHandler = async (c: any) => {
 /**
  * Delete a connection
  */
-export const deleteConnectionHandler = async (c: any) => {
+export const deleteConnectionHandler = async (c: Context) => {
   try {
     const { connectionToId } = await c.req.json();
     const user = c.get("user");

@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@prisma/client";
 import type { Context } from "hono";
-import { getR2SignedUrl } from "../utils/s3Helper.js";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +14,7 @@ const s3 = new S3Client({
 });
 
 /**
- * Get Profile
+ * Get profile
  */
 export const getProfileHandler = async (c: Context) => {
   try {
@@ -82,7 +81,7 @@ export const getProfileHandler = async (c: Context) => {
 };
 
 /**
- * Update Profile
+ * Update profile
  */
 export const updateProfileHandler = async (c: Context) => {
   try {

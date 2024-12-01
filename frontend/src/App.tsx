@@ -9,7 +9,7 @@ import { Toaster } from "react-hot-toast";
 import Connections from "./pages/Connections";
 import Profile from "./pages/Profile";
 import Footer from "./components/footer";
-import Messaging from "./pages/Messaging";
+import Messages from "./pages/Messages";
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
         <Route path="/userlist" element={<Users/>} />
         <Route path="/connections/user/:userId" element={<Connections />} />
         <Route path="/profile/:userId" element={<Profile />} />
-        <Route path="/messages/:userId" element={<Messaging />} /> {/* New Route for Messaging */}
+        <Route path="/messages" element={<Messages />} />
       </Routes>
       <Footer />
     </Router>

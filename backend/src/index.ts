@@ -27,6 +27,7 @@ import { validateJWT } from "./middleware/validateJWT.js";
 import { profileAccessMiddleware } from "./middleware/profileAccess.js";
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
+import { getChatHistoryHandler } from "./routes/messages.js";
 
 export const app = new Hono();
 
@@ -74,6 +75,10 @@ protectedRoutesValidateJWT.post(
 protectedRoutesValidateJWT.delete("/api/connections", deleteConnectionHandler);
 protectedRoutesValidateJWT.put("/api/profile/:user_id", updateProfileHandler);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
+protectedRoutesValidateJWT.get(
+  "/api/chat/:userId/:oppositeUserId",
+  getChatHistoryHandler
+);
 app.route("/", protectedRoutesValidateJWT);
 
 const protectedRouteProfileAccess = new Hono();
@@ -81,14 +86,8 @@ protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
 protectedRouteProfileAccess.use("/api/*", profileAccessMiddleware);
 app.route("/", protectedRouteProfileAccess);
 
+// Start server
 const port = 3000;
+console.log(`Server running on http://localhost:${port}`);
 
-const server = serve({ fetch: app.fetch, port: port }, (info) => {
-  console.log(`Server running on http://localhost:${info.port}`);
-});
-
-export const io = new Server(server as HttpServer, {
-  path: "/ws",
-  serveClient: false,
-  transports: ["websocket"],
-});
+serve({ fetch: app.fetch, port });
