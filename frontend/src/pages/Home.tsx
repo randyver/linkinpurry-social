@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ProfileCard } from "../components/profile-card";
-import { FeedCard } from "../components/feed-card";
+import AddFeed from "../components/add-feed";
 import { Button } from "../components/ui/button";
+import Feed from "../components/feed";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import AddFeed from "../components/add-feed";
+import { ProfileCard } from "../components/profile-card";
 
 interface User {
   userId: string;
@@ -21,19 +21,8 @@ interface User {
   id: string;
 }
 
-interface Feed {
-  id: string;
-  content: string;
-  createdAt: string;
-  user: User;
-}
-
-export default function Home() {
+export default function Home(){
   const [user, setUser] = useState<User | null>(null);
-  const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,60 +51,6 @@ export default function Home() {
     checkLoginStatus();
   }, [navigate]);
 
-  // Fetch feeds with pagination
-  const fetchFeeds = async () => {
-    if (!user || !hasMore) return;
-
-    setLoading(true);
-
-    try {
-      const url = new URL("http://localhost:3000/api/feed");
-      if (cursor) url.searchParams.append("cursor", cursor);
-      url.searchParams.append("limit", "10");
-
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data.feeds);
-
-        // Add new feeds while preventing duplicates
-        setFeeds((prev) => {
-          const newFeeds = data.feeds.filter(
-            (newFeed: Feed) => !prev.some((feed) => feed.id === newFeed.id),
-          );
-          return [...prev, ...newFeeds];
-        });
-
-        // Set cursor and check if there are more feeds
-        setCursor(data.nextCursor);
-        setHasMore(!!data.nextCursor); // Only set true if nextCursor exists
-      } else {
-        console.error("Failed to fetch feeds");
-      }
-    } catch (error) {
-      console.error("Error fetching feeds:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadMoreFeeds = () => {
-    if (hasMore) {
-      fetchFeeds();
-    }
-  };
-
-  // Initial fetch when user is set
-  useEffect(() => {
-    if (user) {
-      fetchFeeds();
-    }
-  }, [user]);
-
   return (
     <div className="min-h-screen bg-wbd-background pt-20">
       <div className="flex justify-between max-w-7xl mx-auto p-4 space-x-6">
@@ -132,77 +67,32 @@ export default function Home() {
           </div>
         )}
 
-        {/* Konten Utama */}
+        {/* Feed Section */}
         <div className="w-1/2 space-y-6">
-          {/* Placeholder Loading */}
-          {loading && (
-            <div className="flex justify-center items-center min-h-[200px]">
-              <p>Loading feeds...</p>
-            </div>
-          )}
-
-          {!loading && (
+          {!user ? (
+            <div className="text-center">Loading...</div>
+          ) : (
             <>
-              {/* Area untuk membuat post */}
+              {/* Profile Card and AddFeed Form */}
               <Card className="p-4 flex items-center">
                 <img
                   src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
                   alt="Profile"
                   className="w-12 h-12 rounded-full mr-4"
                 />
-                {user && (
-                  <AddFeed
-                    fullname={user.fullname}
-                    userId={Number(user.userId)}
-                  />
-                )}
+                <AddFeed
+                  fullname={user.fullname}
+                  userId={Number(user.userId)}
+                />
               </Card>
 
-              {/* Line dan sorting feed */}
               <div className="flex justify-between items-center text-sm text-gray-500">
                 <hr className="flex-grow border-gray-300" />
                 <span className="px-2">Sort by: Top</span>
               </div>
 
-              {/* Feed */}
-              {feeds.length > 0 ? (
-                feeds.map((feed) => (
-                  <FeedCard
-                    feedId={Number(feed.id)}
-                    userId={Number(user?.userId) || 0}
-                    ownerFeedId={Number(feed.user.id)}
-                    key={feed.id}
-                    profilePhoto={
-                      feed.user.profilePhotoPath ||
-                      "https://via.placeholder.com/48"
-                    }
-                    fullname={feed.user.name}
-                    date={new Date(feed.createdAt).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                    content={feed.content}
-                  />
-                ))
-              ) : (
-                <p className="text-center text-gray-500">No feeds available</p>
-              )}
-
-              {/* Load More Button */}
-              {hasMore && !loading && (
-                <button
-                  onClick={loadMoreFeeds}
-                  className="mt-4 p-2 bg-blue-500 text-white rounded"
-                >
-                  Load More
-                </button>
-              )}
-
-              {/* No more feeds */}
-              {!hasMore && !loading && (
-                <p className="text-center text-gray-500">No more feeds</p>
-              )}
+              {/* Feed Component */}
+              <Feed currentUser={user} />
             </>
           )}
         </div>
@@ -234,4 +124,4 @@ export default function Home() {
       </div>
     </div>
   );
-}
+};
