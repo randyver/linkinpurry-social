@@ -56,7 +56,6 @@ publicRoutes.get("/api/get-url", getSignedUrlHandler);
 publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
 
 // Feeds Routes
-publicRoutes.get("/api/feeds", feedsRoute);
 publicRoutes.post("/api/add-feed", addFeedRoute);
 
 app.route("/", publicRoutes);
@@ -78,6 +77,7 @@ protectedRoutesValidateJWT.post(
 );
 protectedRoutesValidateJWT.delete("/api/connections", deleteConnectionHandler);
 protectedRoutesValidateJWT.put("/api/profile/:user_id", updateProfileHandler);
+protectedRoutesValidateJWT.get("/api/feeds", feedsRoute);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
 app.route("/", protectedRoutesValidateJWT);
 
@@ -85,6 +85,7 @@ const protectedRouteProfileAccess = new Hono();
 protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
 protectedRouteProfileAccess.use("/api/*", profileAccessMiddleware);
 app.route("/", protectedRouteProfileAccess);
+
 
 // Start server
 const port = 3000;

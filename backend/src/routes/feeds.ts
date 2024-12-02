@@ -1,12 +1,12 @@
 import { PrismaClient } from "@prisma/client";
-import type { Context } from "hono";
 
 const prisma = new PrismaClient();
 
-export const feedsRoute = async (c: Context) => {
+export const feedsRoute = async (c: any) => {
   try {
     // Ambil userId dari query parameter
-    const userId = c.req.query("userId");
+    const user = c.get("user");
+    const userId = parseInt(user.userId, 10);
 
     if (!userId) {
       return c.json({ error: "User ID is required" }, 400);

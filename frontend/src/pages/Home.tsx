@@ -40,9 +40,10 @@ export default function Home() {
       if (!user) return;
 
       try {
-        const response = await fetch(`http://localhost:3000/api/feeds?userId=${user.userId}`, {
+        const response = await fetch(`http://localhost:3000/api/feeds`, {
           method: "GET",
-        });
+          credentials: "include",
+        }); 
 
         if (response.ok) {
           const data = await response.json();
