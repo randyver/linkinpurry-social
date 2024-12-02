@@ -3,22 +3,48 @@ import { useNavigate } from "react-router-dom";
 import { ProfileCard } from "../components/profile-card";
 import { FeedCard } from "../components/feed-card";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import AddFeed from "../components/add-feed";
 
+interface User {
+  userId: string;
+  username: string;
+  email: string;
+  fullname: string;
+  profilePhotoPath: string;
+  name: string;
+}
+
+interface Feed {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: User;
+}
+
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
-  const [feeds, setFeeds] = useState<any[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [feeds, setFeeds] = useState<Feed[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/check-session", {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await fetch(
+          "http://localhost:3000/api/check-session",
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
 
         if (!response.ok) {
           navigate("/login");
@@ -35,30 +61,55 @@ export default function Home() {
     checkLoginStatus();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchFeeds = async () => {
-      if (!user) return;
+  // Fetch feeds with pagination
+  const fetchFeeds = async () => {
+    if (!user || !hasMore) return;
 
-      try {
-        const response = await fetch(`http://localhost:3000/api/feeds`, {
-          method: "GET",
-          credentials: "include",
-        }); 
+    setLoading(true);
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Feeds:", data);
-          setFeeds(data || []);
-        } else {
-          console.error("Failed to fetch feeds");
-        }
-      } catch (error) {
-        console.error("Error fetching feeds:", error);
-      } finally {
-        setLoading(false);
+    try {
+      const url = new URL("http://localhost:3000/api/feeds");
+      if (cursor) url.searchParams.append("cursor", cursor);
+      url.searchParams.append("limit", "10");
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data.feeds);
+
+        // Add new feeds while preventing duplicates
+        setFeeds((prev) => {
+          const newFeeds = data.feeds.filter(
+            (newFeed: Feed) => !prev.some((feed) => feed.id === newFeed.id)
+          );
+          return [...prev, ...newFeeds];
+        });
+
+        // Set cursor and check if there are more feeds
+        setCursor(data.nextCursor);
+        setHasMore(!!data.nextCursor); // Only set true if nextCursor exists
+      } else {
+        console.error("Failed to fetch feeds");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching feeds:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const loadMoreFeeds = () => {
+    if (hasMore) {
+      fetchFeeds();
+    }
+  };
+
+  // Initial fetch when user is set
+  useEffect(() => {
     if (user) {
       fetchFeeds();
     }
@@ -98,7 +149,12 @@ export default function Home() {
                   alt="Profile"
                   className="w-12 h-12 rounded-full mr-4"
                 />
-                {user && <AddFeed fullname={user.fullname} userId={user.userId} />}
+                {user && (
+                  <AddFeed
+                    fullname={user.fullname}
+                    userId={Number(user.userId)}
+                  />
+                )}
               </Card>
 
               {/* Line dan sorting feed */}
@@ -112,18 +168,36 @@ export default function Home() {
                 feeds.map((feed) => (
                   <FeedCard
                     key={feed.id}
-                    profilePhoto={feed.user.profilePhotoPath || "https://via.placeholder.com/48"}
+                    profilePhoto={
+                      feed.user.profilePhotoPath ||
+                      "https://via.placeholder.com/48"
+                    }
                     fullname={feed.user.name}
-                    date={new Date(feed.createdAt).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}                    
+                    date={new Date(feed.createdAt).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
                     content={feed.content}
                   />
                 ))
               ) : (
                 <p className="text-center text-gray-500">No feeds available</p>
+              )}
+
+              {/* Load More Button */}
+              {hasMore && !loading && (
+                <button
+                  onClick={loadMoreFeeds}
+                  className="mt-4 p-2 bg-blue-500 text-white rounded"
+                >
+                  Load More
+                </button>
+              )}
+
+              {/* No more feeds */}
+              {!hasMore && !loading && (
+                <p className="text-center text-gray-500">No more feeds</p>
               )}
             </>
           )}
@@ -148,9 +222,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="mt-4">
-                <Button className="w-full bg-wbd-primary hover:bg-wbd-tertiary hover:text-white">
-                  Follow
-                </Button>
+                <Button className="w-full bg-blue-500">Follow</Button>
               </div>
             </CardContent>
           </Card>
