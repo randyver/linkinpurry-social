@@ -22,6 +22,8 @@ import {
 import { getProfileHandler, updateProfileHandler } from "./routes/profile.js";
 import { getSignedUrlHandler } from "./routes/get-url.js";
 import { addFeedRoute } from "./routes/add-feed.js";
+import { editFeedRoute } from "./routes/edit-feed.js";
+import { deleteFeedRoute } from "./routes/delete-feed.js";
 import { feedsRoute } from "./routes/feeds.js";
 
 // Import middlewares
@@ -57,6 +59,8 @@ publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
 
 // Feeds Routes
 publicRoutes.post("/api/add-feed", addFeedRoute);
+publicRoutes.put("/api/edit-feed/:feed_id", editFeedRoute);
+publicRoutes.delete("/api/delete-feed/:feed_id", deleteFeedRoute);
 
 app.route("/", publicRoutes);
 

@@ -18,6 +18,7 @@ interface User {
   fullname: string;
   profilePhotoPath: string;
   name: string;
+  id: string;
 }
 
 interface Feed {
@@ -43,7 +44,7 @@ export default function Home() {
           {
             method: "GET",
             credentials: "include",
-          }
+          },
         );
 
         if (!response.ok) {
@@ -84,7 +85,7 @@ export default function Home() {
         // Add new feeds while preventing duplicates
         setFeeds((prev) => {
           const newFeeds = data.feeds.filter(
-            (newFeed: Feed) => !prev.some((feed) => feed.id === newFeed.id)
+            (newFeed: Feed) => !prev.some((feed) => feed.id === newFeed.id),
           );
           return [...prev, ...newFeeds];
         });
@@ -167,6 +168,9 @@ export default function Home() {
               {feeds.length > 0 ? (
                 feeds.map((feed) => (
                   <FeedCard
+                    feedId={Number(feed.id)}
+                    userId={Number(user?.userId) || 0}
+                    ownerFeedId={Number(feed.user.id)}
                     key={feed.id}
                     profilePhoto={
                       feed.user.profilePhotoPath ||
