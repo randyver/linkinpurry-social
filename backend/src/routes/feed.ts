@@ -11,11 +11,9 @@ export const feedsRoute = async (c: any) => {
       return c.json({ error: "User ID is required" }, 400);
     }
 
-    // Ambil parameter cursor dan limit dari query
     const cursor = c.req.query("cursor");
     const limit = parseInt(c.req.query("limit"), 10) || 10;
 
-    // Ambil koneksi yang terkait dengan userId (pengguna yang terhubung)
     const connections = await prisma.connection.findMany({
       where: {
         OR: [{ fromId: BigInt(userId) }, { toId: BigInt(userId) }],
@@ -26,7 +24,6 @@ export const feedsRoute = async (c: any) => {
       },
     });
 
-    // Dapatkan semua userId yang terkoneksi (termasuk user itu sendiri)
     const connectedUserIds = new Set<bigint>();
     connectedUserIds.add(BigInt(userId));
     connections.forEach((connection) => {
@@ -34,7 +31,6 @@ export const feedsRoute = async (c: any) => {
       connectedUserIds.add(connection.toId);
     });
 
-    // Query untuk mengambil feeds dari pengguna yang terkoneksi
     const feeds = await prisma.feed.findMany({
       where: {
         userId: {
@@ -59,14 +55,12 @@ export const feedsRoute = async (c: any) => {
       },
     });
 
-    // Tentukan cursor berikutnya untuk pagination
     let nextCursor: string | null = null;
     if (feeds.length > limit) {
       nextCursor = feeds[limit].id.toString();
       feeds.pop();
     }
 
-    // Konversi BigInt ke string untuk serialisasi
     const serializedFeeds = feeds.map((feed) => ({
       ...feed,
       id: feed.id.toString(),
@@ -76,7 +70,6 @@ export const feedsRoute = async (c: any) => {
       },
     }));
 
-    // Kembalikan hasil feeds dan cursor untuk halaman berikutnya
     return c.json({
       feeds: serializedFeeds,
       nextCursor,
@@ -84,5 +77,56 @@ export const feedsRoute = async (c: any) => {
   } catch (error) {
     console.error("Error fetching feeds:", error);
     return c.json({ error: "Failed to fetch feeds" }, 500);
+  }
+};
+
+export const addFeedRoute = async (c: any) => {
+  try {
+    const { content, userId } = await c.req.json();
+
+    const newFeed = await prisma.feed.create({
+      data: {
+        content,
+        userId,
+        createdAt: new Date(),
+      },
+    });
+
+    return c.json({ id: newFeed.id.toString(), content: newFeed.content }, 201);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: "Failed to create feed" }, 500);
+  }
+};
+
+export const editFeedRoute = async (c: any) => {
+  try {
+    const feedId = BigInt(c.req.param("feed_id"));
+    const { content } = await c.req.json();
+
+    const feed = await prisma.feed.update({
+      where: { id: feedId },
+      data: { content },
+    });
+
+    return c.json({ id: feed.id.toString(), content: feed.content });
+  } catch (error) {
+    console.error("Failed to update feed:", error);
+    return c.json({ error: "Failed to update feed" }, 500);
+  }
+};
+
+export const deleteFeedRoute = async (c: any) => {
+  try {
+    const feedId = BigInt(c.req.param("feed_id"));
+
+    await prisma.feed.delete({
+      where: { id: feedId },
+    });
+
+    return c.json({ message: "Feed deleted successfully" });
+  } catch (error) {
+    console.error("Failed to delete feed:", error);
+    return c.json({ error: "Failed to delete feed" }, 500);
   }
 };

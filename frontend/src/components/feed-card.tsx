@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader } from "./ui/card";
-import { MoreHorizontal } from "lucide-react"; // Importing the "three dots" icon
-import { Button } from "./ui/button"; // Importing the Button from Shadcn UI
-import { useState, useEffect, useRef } from "react"; // Import useRef for reference to dropdown and useEffect for event handling
-import EditFeed from "./edit-feed"; // Import the EditFeed component
+import { MoreHorizontal } from "lucide-react";
+import { Button } from "./ui/button";
+import { useState, useEffect, useRef } from "react";
+import EditFeed from "./edit-feed";
 
 interface FeedCardProps {
   profilePhoto: string;
@@ -23,70 +23,64 @@ export const FeedCard = ({
   userId,
   ownerFeedId,
 }: FeedCardProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // To toggle the visibility of the dropdown menu
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // To manage EditFeed modal visibility
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // To manage Delete confirmation modal visibility
-  const [isDeleting, setIsDeleting] = useState(false); // To manage delete loading state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false); 
 
-  const menuRef = useRef<HTMLDivElement>(null); // Reference for the dropdown menu
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close the menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false); // Close the menu if clicked outside
+        setIsMenuOpen(false);
       }
     };
 
-    // Add event listener for clicks outside the menu
     document.addEventListener("mousedown", handleClickOutside);
 
-    // Cleanup event listener on component unmount
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const handleEdit = () => {
-    setIsEditModalOpen(true); // Open the EditFeed modal
-    setIsMenuOpen(false); // Close the menu
+    setIsEditModalOpen(true);
+    setIsMenuOpen(false);
   };
 
   const handleCloseEditModal = () => {
-    setIsEditModalOpen(false); // Close the EditFeed modal
+    setIsEditModalOpen(false);
   };
 
   const handleDelete = async () => {
-    setIsDeleting(true); // Show loading indicator
+    setIsDeleting(true);
 
     try {
-      // Call the DELETE API endpoint using fetch
-      const response = await fetch(`http://localhost:3000/api/delete-feed/${feedId}`, {
+      const response = await fetch(`http://localhost:3000/api/feed/${feedId}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (!response.ok) {
         throw new Error("Failed to delete feed");
       }
 
-      // After successful deletion, close the delete modal
       setIsDeleteModalOpen(false);
-      setIsMenuOpen(false); // Close the menu after deletion
-      // Optionally, you can add a success notification or update state here
+      setIsMenuOpen(false);
       alert("Feed deleted successfully!");
     } catch (error) {
       console.error("Failed to delete feed:", error);
       alert("Failed to delete feed");
     } finally {
-      setIsDeleting(false); // Hide loading indicator
+      setIsDeleting(false);
     }
   };
 
   const handleCancelDelete = () => {
-    setIsDeleteModalOpen(false); // Close the confirmation modal without deleting
+    setIsDeleteModalOpen(false);
   };
 
-  // Check if the current feed belongs to the logged-in user
   const isOwnFeed = userId === ownerFeedId;
 
   return (
@@ -110,7 +104,7 @@ export const FeedCard = ({
               variant="ghost"
               className="text-gray-500 hover:text-gray-800 p-0"
               aria-label="More options"
-              onClick={() => setIsMenuOpen(!isMenuOpen)} // Toggle the menu visibility
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <MoreHorizontal className="w-5 h-5" />
             </Button>
@@ -140,7 +134,7 @@ export const FeedCard = ({
                       </li>
                       <li>
                         <Button
-                          onClick={() => setIsDeleteModalOpen(true)} // Show the delete confirmation modal
+                          onClick={() => setIsDeleteModalOpen(true)}
                           className="block px-4 py-2 text-left text-red-600  w-full text-sm"
                         >
                           Delete Feed
@@ -165,7 +159,7 @@ export const FeedCard = ({
           userId={userId}
           feedId={feedId}
           initialContent={content}
-          onClose={handleCloseEditModal} // Close modal callback
+          onClose={handleCloseEditModal}
         />
       )}
 
@@ -185,7 +179,7 @@ export const FeedCard = ({
               <Button
                 onClick={handleDelete}
                 className="text-white bg-red-600 hover:bg-red-700"
-                disabled={isDeleting} // Disable button during delete process
+                disabled={isDeleting}
               >
                 {isDeleting ? "Deleting..." : "Yes"}
               </Button>

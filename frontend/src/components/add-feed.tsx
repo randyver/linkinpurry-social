@@ -16,8 +16,9 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
   const handlePost = async () => {
     if (postContent.trim()) {
       try {
-        const response = await fetch("http://localhost:3000/api/add-feed", {
+        const response = await fetch("http://localhost:3000/api/feed", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },

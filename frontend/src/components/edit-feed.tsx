@@ -8,18 +8,16 @@ interface EditFeedProps {
   userId: number;
   feedId: number;
   initialContent: string;
-  onClose: () => void; // Callback to close the modal
+  onClose: () => void;
 }
 
 const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialContent, onClose }) => {
-  const [isOpen, setIsOpen] = useState(true); // Modal is open by default
-  const [postContent, setPostContent] = useState(initialContent); // Set initial content to the feed's content
+  const [isOpen, setIsOpen] = useState(true);
+  const [postContent, setPostContent] = useState(initialContent);
   const maxLength = 280;
 
-  // Ref for the modal container to detect clicks outside of it
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Close the modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -30,7 +28,6 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialCo
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    // Cleanup the event listener when the component is unmounted
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -39,8 +36,9 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialCo
   const handleEdit = async () => {
     if (postContent.trim()) {
       try {
-        const response = await fetch(`http://localhost:3000/api/edit-feed/${feedId}`, {
+        const response = await fetch(`http://localhost:3000/api/feed/${feedId}`, {
           method: "PUT",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -57,9 +55,9 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialCo
         const data = await response.json();
         console.log("Feed edited:", data);
 
-        setPostContent(""); // Clear content after successful edit
-        setIsOpen(false); // Close modal after edit
-        onClose(); // Call the callback to close the modal
+        setPostContent("");
+        setIsOpen(false);
+        onClose();
       } catch (error) {
         console.error("Error editing feed:", error);
         alert("Failed to edit feed");
@@ -88,7 +86,7 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialCo
               onClick={() => { setIsOpen(false); onClose(); }}
               className="absolute top-4 right-4 text-xl cursor-pointer"
             >
-              <X size={24} /> {/* Icon close from lucide-react */}
+              <X size={24} />
             </span>
 
             {/* User Profile Info */}
