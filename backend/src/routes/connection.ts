@@ -156,7 +156,6 @@ export const sendConnectionRequestHandler = async (c: any) => {
  */
 export const getConnectionRequestsHandler = async (c: any) => {
   try {
-    console.log("hello");
     const user = c.get("user");
 
     if (!user) {
@@ -189,7 +188,9 @@ export const getConnectionRequestsHandler = async (c: any) => {
       createdAt: request.createdAt.toISOString(),
     }));
 
-    return c.json({ success: true, data: formattedRequests });
+    const count = requests.length;
+
+    return c.json({ success: true, count, data: formattedRequests});
   } catch (error) {
     console.error("Error fetching connection requests:", error);
     return errorResponse(c, "Failed to fetch connection requests", error);
