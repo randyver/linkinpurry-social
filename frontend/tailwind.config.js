@@ -19,6 +19,7 @@ export default {
         "wbd-highlight": "hsl(35 85% 71.2%)",
         "wbd-tertiary": "hsl(33 31.3% 38.8%)",
         "wbd-red": "hsl(0 31.3% 38.8%)",
+        "wbd-darker-red": "hsl(0 31.3% 28.8%)",
         "wbd-yellow": "hsl(34 34.4% 50.4%)",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

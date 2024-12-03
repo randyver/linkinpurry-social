@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@prisma/client";
 import type { Context } from "hono";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -103,6 +104,8 @@ export const updateProfileHandler = async (c: Context) => {
     const workHistory = formData.get("work_history") as string;
     const skills = formData.get("skills") as string;
     const profilePhoto = formData.get("profile_photo");
+    const currentPassword = formData.get("current_password") as string;
+    const newPassword = formData.get("new_password") as string;
 
     if (!username || !name) {
       return c.json(
@@ -117,6 +120,37 @@ export const updateProfileHandler = async (c: Context) => {
       workHistory: workHistory || "",
       skills: skills || "",
     };
+
+    if (currentPassword && newPassword) {
+      const userRecord = await prisma.user.findUnique({
+        where: { id: BigInt(userId) },
+      });
+
+      if (!userRecord) {
+        return c.json({ success: false, message: "User not found" }, 404);
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        userRecord.passwordHash,
+      );
+
+      if (!isPasswordValid) {
+        return c.json(
+          { success: false, message: "Current password is incorrect" },
+          400
+        );
+      }
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      updateData.passwordHash = hashedNewPassword;
+      
+    } else if (newPassword) {
+      return c.json(
+        { success: false, message: "Current password is required to update the password" },
+        400
+      );
+    }
 
     if (profilePhoto && typeof profilePhoto !== "string") {
       const fileBuffer = Buffer.from(await profilePhoto.arrayBuffer());
@@ -156,3 +190,4 @@ export const updateProfileHandler = async (c: Context) => {
     return c.json({ success: false, message: "Failed to update profile" }, 500);
   }
 };
+

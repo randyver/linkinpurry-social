@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { MessageSquareText } from "lucide-react";
 
 import { Button } from "./ui/button";
 
@@ -9,6 +10,8 @@ import {
   UserRoundPlus,
   ChevronDown,
   ChevronUp,
+  House,
+  Compass,
 } from "lucide-react";
 
 interface User {
@@ -91,60 +94,77 @@ function Navbar() {
         </div>
 
         {isLoggedIn ? (
-          <div className="space-x-8 flex items-center">
-            <div className="space-x-2 items-center flex flex-row">
-              <div
-                className="relative flex flex-col items-center group"
-                onMouseEnter={() => setHovered("requests")}
-                onMouseLeave={() => setHovered(null)}
-              >
-                <UserRoundPlus size={24} className="text-wbd-primary" />
+          <div className="space-x-12 flex items-center">
+            <div className="flex space-x-12 items-center">
+              {[
+                {
+                  name: "Home",
+                  to: "/",
+                  icon: <House size={24} className="text-wbd-primary" />,
+                  key: "home",
+                },
+                {
+                  name: "Explore",
+                  to: "/userlist",
+                  icon: <Compass size={24} className="text-wbd-primary" />,
+                  key: "explore",
+                },
+                {
+                  name: "Network",
+                  to: `/connections/user/${user?.id}`,
+                  icon: (
+                    <UsersRound size={24} className="text-wbd-primary" />
+                  ),
+                  key: "connections",
+                },
+                {
+                  name: "Requests",
+                  to: "",
+                  icon: (
+                    <UserRoundPlus size={24} className="text-wbd-primary" />
+                  ),
+                  key: "requests",
+                },
+                {
+                  name: "Chat",
+                  to: "",
+                  icon: (
+                    <MessageSquareText size={24} className="text-wbd-primary" />
+                  ),
+                  key: "chat",
+                },
+              ].map(({ name, to, icon, key }) => (
                 <Link
-                  to=""
-                  className={`text-lg font-medium text-wbd-primary relative px-4`}
+                  key={key}
+                  to={to}
+                  className="relative flex flex-col items-center group flex-1 text-center"
+                  onMouseEnter={() => setHovered(key)}
+                  onMouseLeave={() => setHovered(null)}
                 >
-                  Requests
+                  {icon}
+                  <span className={`text-lg font-medium text-wbd-primary`}>
+                    {name}
+                  </span>
                   <span
-                    className={`absolute -bottom-4 left-0 h-1 bg-wbd-primary transition-all duration-300 ${
-                      location.pathname === "" && hovered !== "explore"
-                        ? "w-full"
-                        : hovered === "requests"
-                          ? "w-full"
-                          : "w-0"
+                    className={`absolute -bottom-4 left-1/2 transform -translate-x-1/2 h-1 bg-wbd-primary transition-all duration-300 rounded-full ${
+                      (location.pathname === to && hovered === null) ||
+                      hovered === key
+                        ? "w-24"
+                        : "w-0"
                     }`}
                   ></span>
                 </Link>
-              </div>
-
-              <div
-                className="relative flex flex-col items-center group"
-                onMouseEnter={() => setHovered("explore")}
-                onMouseLeave={() => setHovered(null)}
-              >
-                <UsersRound size={24} className="text-wbd-primary" />
-                <Link
-                  to="/userlist"
-                  className={`text-lg font-medium text-wbd-primary relative px-4`}
-                >
-                  Explore
-                  <span
-                    className={`absolute -bottom-4 left-0 h-1 bg-wbd-primary transition-all duration-300 ${
-                      location.pathname === "/userlist" &&
-                      hovered !== "requests"
-                        ? "w-full"
-                        : hovered === "explore"
-                          ? "w-full"
-                          : "w-0"
-                    }`}
-                  ></span>
-                </Link>
-              </div>
+              ))}
             </div>
 
             <div className="relative flex items-center space-x-4">
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img
-                  src={user?.profilePhotoPath}
+                  src={
+                    user?.profilePhotoPath
+                      ? user?.profilePhotoPath
+                      : "/default-profile-pic.png"
+                  }
                   alt="User's Profile"
                   className="w-full h-full object-cover"
                 />

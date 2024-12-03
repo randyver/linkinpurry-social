@@ -3,7 +3,7 @@ import LinkinPurryLogo from "./image/linkinpurry-logo";
 
 function Footer() {
   return (
-    <footer className="bg-wbd-background py-8">
+    <footer className="bg-wbd-secondary py-8">
       <div className="max-w-7xl mx-auto px-4 space-y-20">
         <div className="flex flex-col sm:flex-row justify-between items-center">
           <div className="mb-4 sm:mb-0">
