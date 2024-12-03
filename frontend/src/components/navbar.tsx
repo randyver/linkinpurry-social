@@ -16,6 +16,7 @@ import {
 
 interface User {
   id: string;
+  name: string;
   username: string;
   email: string;
   profilePhotoPath: string;
@@ -45,13 +46,12 @@ function Navbar() {
           setIsLoggedIn(true);
 
           const userResponse = await fetch(
-            `http://localhost:3000/api/user?email=${sessionData.user.email}`,
+            `http://localhost:3000/api/user?userId=${sessionData.user.userId}`,
             { method: "GET" },
           );
 
           if (userResponse.ok) {
             const userData = await userResponse.json();
-            console.log(userData);
             setUser(userData);
           }
         } else {
@@ -119,7 +119,7 @@ function Navbar() {
                 },
                 {
                   name: "Requests",
-                  to: "",
+                  to: `/requests/user/${user?.id}`,
                   icon: (
                     <UserRoundPlus size={24} className="text-wbd-primary" />
                   ),

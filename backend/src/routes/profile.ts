@@ -21,8 +21,12 @@ export const getProfileHandler = async (c: Context) => {
   try {
     const userIdParam = c.req.param("user_id");
     const targetUserId = parseInt(userIdParam, 10);
+    const loggedInUserIdParam = c.req.query("logged_in_user_id");
+    const loggedInUserId = loggedInUserIdParam
+      ? parseInt(loggedInUserIdParam, 10)
+      : null;
 
-    if (isNaN(targetUserId)) {
+    if (isNaN(targetUserId) || !loggedInUserId || (loggedInUserId && isNaN(loggedInUserId))) {
       return c.json({ success: false, message: "Invalid user ID" }, 400);
     }
 
@@ -53,6 +57,15 @@ export const getProfileHandler = async (c: Context) => {
       return c.json({ success: false, message: "User not found" }, 404);
     }
 
+    const connection = await prisma.connection.findUnique({
+      where: {
+        fromId_toId: {
+          fromId: BigInt(loggedInUserId),
+          toId: BigInt(targetUserId),
+        },
+      },
+    });
+
     const responseBody: any = {
       username: targetUser.username,
       name: targetUser.name,
@@ -60,6 +73,7 @@ export const getProfileHandler = async (c: Context) => {
       connection_count: targetUser._count.sentConnections || 0,
       work_history: targetUser.workHistory,
       skills: targetUser.skills,
+      is_connected: !!connection,
     };
 
     if (access >= 2) {
@@ -132,7 +146,7 @@ export const updateProfileHandler = async (c: Context) => {
 
       const isPasswordValid = await bcrypt.compare(
         currentPassword,
-        userRecord.passwordHash,
+        userRecord.passwordHash
       );
 
       if (!isPasswordValid) {
@@ -144,10 +158,12 @@ export const updateProfileHandler = async (c: Context) => {
 
       const hashedNewPassword = await bcrypt.hash(newPassword, 10);
       updateData.passwordHash = hashedNewPassword;
-      
     } else if (newPassword) {
       return c.json(
-        { success: false, message: "Current password is required to update the password" },
+        {
+          success: false,
+          message: "Current password is required to update the password",
+        },
         400
       );
     }
@@ -191,4 +207,3 @@ export const updateProfileHandler = async (c: Context) => {
     return c.json({ success: false, message: "Failed to update profile" }, 500);
   }
 };
-

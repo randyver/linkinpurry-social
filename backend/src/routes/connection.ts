@@ -31,6 +31,8 @@ function errorResponse(
 export const getConnectionsHandler = async (c: Context) => {
   try {
     const userIdParam = c.req.param("user_id");
+    const page = parseInt(c.req.query("page") || "1", 10);
+    const limit = parseInt(c.req.query("limit") || "10", 10);
 
     if (!userIdParam || isNaN(parseInt(userIdParam, 10))) {
       return c.json({ success: false, message: "Invalid user ID" }, 400);
@@ -38,39 +40,44 @@ export const getConnectionsHandler = async (c: Context) => {
 
     const targetUserId = parseInt(userIdParam, 10);
 
+    if (page < 1 || limit < 1) {
+      return c.json({ success: false, message: "Invalid page or limit" }, 400);
+    }
+
+    const skip = (page - 1) * limit;
+
+    const totalConnections = await prisma.connection.count({
+      where: { fromId: targetUserId },
+    });
+
     const connections = await prisma.connection.findMany({
       where: { fromId: targetUserId },
       select: {
         toId: true,
         createdAt: true,
+        to: { select: { name: true, username: true, profilePhotoPath: true } },
       },
+      skip: skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
     });
 
-    const userDetailsPromises = connections.map(async (connection) => {
-      const user = await prisma.user.findUnique({
-        where: { id: connection.toId },
-        select: {
-          username: true,
-          profilePhotoPath: true,
-        },
-      });
+    const formattedConnections = connections.map((connection) => ({
+      toId: connection.toId.toString(),
+      name: connection.to.name,
+      username: connection.to.username,
+      profilePhotoPath: connection.to.profilePhotoPath || "/default-avatar.png",
+      createdAt: connection.createdAt.toISOString(),
+    }));
 
-      if (user) {
-        return {
-          id: connection.toId.toString(),
-          username: user.username,
-          profilePhotoPath: user.profilePhotoPath || "/default-avatar.png",
-          createdAt: connection.createdAt.toISOString(),
-        };
-      } else {
-        return null;
-      }
+    const hasMore = skip + formattedConnections.length < totalConnections;
+
+    return c.json({
+      success: true,
+      data: formattedConnections,
+      total: totalConnections,
+      hasMore,
     });
-
-    const userDetails = await Promise.all(userDetailsPromises);
-    const formattedConnections = userDetails.filter((user) => user !== null);
-
-    return c.json({ success: true, data: formattedConnections });
   } catch (error) {
     console.error("Error fetching connections:", error);
     return c.json(
@@ -149,7 +156,6 @@ export const sendConnectionRequestHandler = async (c: Context) => {
  */
 export const getConnectionRequestsHandler = async (c: Context) => {
   try {
-    console.log("hello");
     const user = c.get("user");
 
     if (!user) {
@@ -160,17 +166,31 @@ export const getConnectionRequestsHandler = async (c: Context) => {
 
     const requests = await prisma.connectionRequest.findMany({
       where: { toId: userId },
+      include: {
+        from: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            profilePhotoPath: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 
     const formattedRequests = requests.map((request) => ({
-      ...request,
       fromId: request.fromId.toString(),
       toId: request.toId.toString(),
+      name: request.from.name,
+      username: request.from.username,
+      profilePhotoPath: request.from.profilePhotoPath,
       createdAt: request.createdAt.toISOString(),
     }));
 
-    return c.json({ success: true, data: formattedRequests });
+    const count = requests.length;
+
+    return c.json({ success: true, count, data: formattedRequests});
   } catch (error) {
     console.error("Error fetching connection requests:", error);
     return errorResponse(c, "Failed to fetch connection requests", error);

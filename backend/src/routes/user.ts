@@ -5,17 +5,18 @@ const prisma = new PrismaClient();
 const userRoute = new Hono();
 
 userRoute.get("/user", async (c) => {
-  const email = c.req.query("email");
+  const userId = c.req.query("userId");
 
-  if (!email) {
-    return c.json({ error: "Email is required" }, 400);
+  if (!userId) {
+    return c.json({ error: "userId is required" }, 400);
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { id: BigInt(userId) },
       select: {
         id: true,
+        name: true,
         username: true,
         email: true,
         profilePhotoPath: true,

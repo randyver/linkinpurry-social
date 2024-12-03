@@ -1,18 +1,22 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Fuse from "fuse.js";
+import toast from "react-hot-toast";
 
-import { Search } from "lucide-react";
+import { Search, UserRoundPlus } from "lucide-react";
 import { Button } from "../components/ui/button";
 
 interface User {
   id: number;
   username: string;
+  name: string;
   profilePhotoPath: string;
+  isConnected?: boolean;
+  hasPendingRequest?: boolean;
 }
 
 interface CurrentUser {
-  email: string;
+  id: number;
 }
 
 export default function Users() {
@@ -46,7 +50,7 @@ export default function Users() {
         if (sessionResponse.ok) {
           const sessionData = await sessionResponse.json();
           setIsLoggedIn(true);
-          setCurrentUser(sessionData.user);
+          setCurrentUser({ id: sessionData.user.userId });
         }
       } catch (error) {
         console.error("Failed to fetch session:", error);
@@ -68,25 +72,17 @@ export default function Users() {
 
   useEffect(() => {
     const fetchUsers = async (page: number) => {
-      console.log("Fetching users for page:", page);
-      console.log("Current user:", currentUser?.email);
-      console.log("Loading:", loading);
-      if (!currentUser?.email || fetchedPages.current.has(page)) return;
+      if (!currentUser?.id || fetchedPages.current.has(page)) return;
 
       setLoading(true);
       fetchedPages.current.add(page);
 
-      console.log("Fetching users for page:", page);
-
       try {
         const response = await fetch(
-          `http://localhost:3000/api/users?page=${page}&limit=15&excludeEmail=${currentUser.email}`,
+          `http://localhost:3000/api/users?page=${page}&limit=15&excludedId=${currentUser.id}`,
         );
 
-        console.log("Fetched users response:", response);
         const data = await response.json();
-
-        console.log("Fetched users:", data.users);
 
         if (data.users.length > 0) {
           setUsers((prevUsers) => {
@@ -97,9 +93,7 @@ export default function Users() {
           });
         }
 
-        if (data.users.length < 10) {
-          setHasMore(false);
-        }
+        setHasMore(data.hasMore);
       } catch (error) {
         console.error("Failed to fetch users:", error);
       } finally {
@@ -174,12 +168,51 @@ export default function Users() {
     };
   }, [hasMore, loading]);
 
+  const sendRequest = async (requestToId: number) => {
+    const toastId = toast.loading("Sending connection request...");
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/connections/request",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ requestToId }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send connection request");
+      }
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === requestToId ? { ...user, hasPendingRequest: true } : user,
+        ),
+      );
+      setFilteredUsers((prevFilteredUsers) =>
+        prevFilteredUsers.map((user) =>
+          user.id === requestToId ? { ...user, hasPendingRequest: true } : user,
+        ),
+      );
+
+      toast.success("Connection request sent successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error sending connection request");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-wbd-background pt-20 px-8">
       <section className="p-6 mx-auto max-w-7xl space-y-8">
         <div className="relative max-w-lg mx-auto">
           <div className="absolute inset-y-0 left-3 flex items-center">
-            <Search className="text-gray-400" />
+            <Search className="text-wbd-primary" />
           </div>
           <input
             type="text"
@@ -198,30 +231,48 @@ export default function Users() {
                 className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-transform duration-300 p-6 flex flex-col justify-between group"
               >
                 <div className="flex items-center space-x-4">
-                  <img
-                    src={
-                      user.profilePhotoPath
-                        ? user.profilePhotoPath
-                        : "/default-profile-pic.png"
-                    }
-                    alt={`${user.username}'s profile`}
-                    className="w-16 h-16 rounded-full object-cover border border-gray-200"
-                  />
-                  <strong className="text-lg font-semibold text-wbd-text">
-                    {user.username}
-                  </strong>
-                </div>
-                {isLoggedIn && (
-                  <div className="flex justify-end mt-6">
-                    <Button
-                      onClick={() => navigate(`/profile/${user.id}`)}
-                      variant="default"
-                      size="sm"
-                    >
-                      View Profile
-                    </Button>
+                  <div
+                    className="flex items-center space-x-4 cursor-pointer"
+                    onClick={() => navigate(`/profile/${user.id}`)}
+                  >
+                    <img
+                      src={
+                        user.profilePhotoPath
+                          ? user.profilePhotoPath
+                          : "/default-profile-pic.png"
+                      }
+                      alt={`${user.username}'s profile`}
+                      className="w-16 h-16 rounded-full object-cover border border-gray-200"
+                    />
+                    <div className="flex flex-col">
+                      {user.name && (
+                        <strong className="text-lg font-semibold text-wbd-text">
+                          {user.name}
+                        </strong>
+                      )}
+                      <span className="text-md text-gray-500">
+                        @{user.username}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        ID: {user.id}
+                      </span>
+                    </div>
                   </div>
-                )}
+                </div>
+                <div className="flex justify-end mt-6">
+                  {isLoggedIn &&
+                    !user.isConnected &&
+                    !user.hasPendingRequest && (
+                      <Button
+                        className="mt-4 text-md"
+                        variant="secondary"
+                        onClick={() => sendRequest(user.id)}
+                      >
+                        <UserRoundPlus className="mr-1" />
+                        Connect
+                      </Button>
+                    )}
+                </div>
               </div>
             ))}
           </div>
