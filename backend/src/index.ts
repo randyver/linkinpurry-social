@@ -25,8 +25,11 @@ import { getSignedUrlHandler } from "./routes/get-url.js";
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
 import { profileAccessMiddleware } from "./middleware/profileAccess.js";
+import { Server } from "socket.io";
+import { Server as HttpServer } from "http";
+import { getChatHistoryHandler } from "./routes/messages.js";
 
-const app = new Hono();
+export const app = new Hono();
 
 // Middleware CORS
 app.use(
@@ -72,6 +75,10 @@ protectedRoutesValidateJWT.post(
 protectedRoutesValidateJWT.delete("/api/connections", deleteConnectionHandler);
 protectedRoutesValidateJWT.put("/api/profile/:user_id", updateProfileHandler);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
+protectedRoutesValidateJWT.get(
+  "/api/chat/:userId/:oppositeUserId",
+  getChatHistoryHandler
+);
 app.route("/", protectedRoutesValidateJWT);
 
 const protectedRouteProfileAccess = new Hono();

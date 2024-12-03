@@ -9,6 +9,7 @@ import Connections from "./pages/Connections";
 import Profile from "./pages/Profile";
 import Footer from "./components/footer";
 import StickyFooter from "./components/sticky-footer";
+import Messages from "./pages/Messages";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function Layout() {
         <Route path="/userlist" element={<Users />} />
         <Route path="/connections/user/:userId" element={<Connections />} />
         <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/messages" element={<Messages />} />
       </Routes>
       {isStickyFooter ? <StickyFooter /> : <Footer />}
     </>
