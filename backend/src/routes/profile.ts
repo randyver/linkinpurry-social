@@ -162,6 +162,7 @@ export const updateProfileHandler = async (c: Context) => {
           Key: fileKey,
           Body: fileBuffer,
           ContentType: profilePhoto.type,
+          CacheControl: "no-cache"
         })
       );
 
