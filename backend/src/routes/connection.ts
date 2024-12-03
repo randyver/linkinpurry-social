@@ -31,6 +31,8 @@ function errorResponse(
 export const getConnectionsHandler = async (c: any) => {
   try {
     const userIdParam = c.req.param("user_id");
+    const page = parseInt(c.req.query("page") || "1", 10);
+    const limit = parseInt(c.req.query("limit") || "10", 10);
 
     if (!userIdParam || isNaN(parseInt(userIdParam, 10))) {
       return c.json({ success: false, message: "Invalid user ID" }, 400);
@@ -38,21 +40,44 @@ export const getConnectionsHandler = async (c: any) => {
 
     const targetUserId = parseInt(userIdParam, 10);
 
+    if (page < 1 || limit < 1) {
+      return c.json({ success: false, message: "Invalid page or limit" }, 400);
+    }
+
+    const skip = (page - 1) * limit;
+
+    const totalConnections = await prisma.connection.count({
+      where: { fromId: targetUserId },
+    });
+
     const connections = await prisma.connection.findMany({
       where: { fromId: targetUserId },
       select: {
         toId: true,
         createdAt: true,
+        to: { select: { name: true, username: true, profilePhotoPath: true } },
       },
+      skip: skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
     });
 
     const formattedConnections = connections.map((connection) => ({
-      ...connection,
       toId: connection.toId.toString(),
+      name: connection.to.name,
+      username: connection.to.username,
+      profilePhotoPath: connection.to.profilePhotoPath,
       createdAt: connection.createdAt.toISOString(),
     }));
 
-    return c.json({ success: true, data: formattedConnections });
+    const hasMore = skip + formattedConnections.length < totalConnections;
+
+    return c.json({
+      success: true,
+      data: formattedConnections,
+      total: totalConnections,
+      hasMore,
+    });
   } catch (error) {
     console.error("Error fetching connections:", error);
     return c.json(
@@ -131,7 +156,7 @@ export const sendConnectionRequestHandler = async (c: any) => {
  */
 export const getConnectionRequestsHandler = async (c: any) => {
   try {
-    console.log("hello")
+    console.log("hello");
     const user = c.get("user");
 
     if (!user) {
@@ -142,13 +167,25 @@ export const getConnectionRequestsHandler = async (c: any) => {
 
     const requests = await prisma.connectionRequest.findMany({
       where: { toId: userId },
+      include: {
+        from: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            profilePhotoPath: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 
     const formattedRequests = requests.map((request) => ({
-      ...request,
       fromId: request.fromId.toString(),
       toId: request.toId.toString(),
+      name: request.from.name,
+      username: request.from.username,
+      profilePhotoPath: request.from.profilePhotoPath,
       createdAt: request.createdAt.toISOString(),
     }));
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
@@ -28,6 +28,8 @@ type ProfileData = {
 };
 
 export default function Profile() {
+  const navigate = useNavigate();
+
   const { userId } = useParams<{ userId: string }>();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -50,6 +52,7 @@ export default function Profile() {
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
     useState(false);
   const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   if (!userId) {
     toast.error("User ID is required to view the profile.");
@@ -69,6 +72,7 @@ export default function Profile() {
 
       const userData = await response.json();
       setLoggedInUserId(userData.user.userId);
+      console.log("Logged in user ID:", userData.user.userId);
     } catch (error) {
       toast.error("Error fetching logged-in user");
     }
@@ -78,7 +82,7 @@ export default function Profile() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3000/api/profile/${userId}`,
+        `http://localhost:3000/api/profile/${userId}?logged_in_user_id=${loggedInUserId}`,
         {
           method: "GET",
           credentials: "include",
@@ -108,6 +112,9 @@ export default function Profile() {
         if (data.body.profile_photo) {
           setPhotoUrl(data.body.profile_photo);
         }
+
+        console.log("Is connected:", data.body.is_connected);
+        setIsConnected(data.body.is_connected);
       }
     } catch (error) {
       console.error(error);
@@ -180,9 +187,14 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    fetchProfile();
     fetchLoggedInUser();
-  }, [userId]);
+  }, []);
+  
+  useEffect(() => {
+    if (loggedInUserId) {
+      fetchProfile();
+    }
+  }, [loggedInUserId, userId]);
 
   const sortWorkHistory = (
     workHistory: {
@@ -201,7 +213,7 @@ export default function Profile() {
         b.end_date && b.end_date !== "Present"
           ? new Date(b.end_date)
           : new Date();
-      return dateB.getTime() - dateA.getTime(); // Sort by most recent end_date
+      return dateB.getTime() - dateA.getTime();
     });
   };
 
@@ -240,6 +252,34 @@ export default function Profile() {
       )
       .join("\n");
   };
+
+  const sendRequest = async (userId: string) => {
+    const toastId = toast.loading("Sending connection request...");
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/connections/request",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ userId }),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to send connection request");
+      }
+  
+      toast.success("Connection request sent successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error sending connection request");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };  
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-wbd-background pt-32 p-6">
@@ -482,11 +522,16 @@ export default function Profile() {
                     {profile.name}
                   </h1>
                   <p className="text-med text-wbd-text">@{profile.username}</p>
-                  <p className="mt-2 text-sm text-wbd-primary">
+                  <p className="mt-2 text-sm text-wbd-primary cursor-pointer hover:underline" onClick={() => navigate(`/connections/user/${userId}`)}>
                     {profile.connection_count} connections
                   </p>
-                  {!isEditing && userId !== loggedInUserId && (
-                    <Button className="mt-4 text-md" variant="secondary">
+                  {!isConnected && !isEditing && userId !== loggedInUserId && (
+                    <Button
+                      className="mt-4 text-md"
+                      variant="secondary"
+                      onClick={() => sendRequest(userId)}
+                      disabled={userId === loggedInUserId}
+                    >
                       <UserRoundPlus className="mr-1" />
                       Connect
                     </Button>

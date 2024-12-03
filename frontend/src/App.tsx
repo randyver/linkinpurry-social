@@ -7,6 +7,7 @@ import Users from "./pages/Users";
 import { Toaster } from "react-hot-toast";
 import Connections from "./pages/Connections";
 import Profile from "./pages/Profile";
+import Requests from "./pages/Requests";
 import Footer from "./components/footer";
 import StickyFooter from "./components/sticky-footer";
 
@@ -23,6 +24,7 @@ function Layout() {
 
   const stickyFooterPaths = [
     "/userlist",
+    "/connections/user/:userId",
   ];
 
   const isStickyFooter = stickyFooterPaths.some((path) =>
@@ -39,6 +41,7 @@ function Layout() {
         <Route path="/login" element={<Login />} />
         <Route path="/userlist" element={<Users />} />
         <Route path="/connections/user/:userId" element={<Connections />} />
+        <Route path="/requests/user/:userId" element={<Requests />} />
         <Route path="/profile/:userId" element={<Profile />} />
       </Routes>
       {isStickyFooter ? <StickyFooter /> : <Footer />}
@@ -46,7 +49,6 @@ function Layout() {
   );
 }
 
-// just in case any dynamic routes are included in the stickyFooterPaths array
 function matchPath(pattern: string, pathname: string): boolean {
   const regex = new RegExp(
     "^" + pattern.replace(/:[^\s/]+/g, "([^/]+)") + "$"
