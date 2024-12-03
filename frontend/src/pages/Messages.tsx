@@ -15,7 +15,7 @@ interface ChatMessage {
   timestamp: string;
 }
 
-const socket = io("http://localhost:4000", {
+const socket = io("http://localhost:3000", {
   transports: ["websocket"],
   withCredentials: true,
 });

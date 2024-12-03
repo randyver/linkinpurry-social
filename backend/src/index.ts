@@ -36,6 +36,7 @@ import { profileAccessMiddleware } from "./middleware/profileAccess.js";
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import { getChatHistoryHandler } from "./routes/messages.js";
+import { attachSocket } from "./socket.js";
 
 export const app = new Hono();
 
@@ -113,4 +114,5 @@ app.route("/", protectedRouteProfileAccess);
 const port = 3000;
 console.log(`Server running on http://localhost:${port}`);
 
-serve({ fetch: app.fetch, port });
+const server = serve({ fetch: app.fetch, port });
+attachSocket(server);
