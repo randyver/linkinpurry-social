@@ -21,6 +21,14 @@ import {
 } from "./routes/connection.js";
 import { getProfileHandler, updateProfileHandler } from "./routes/profile.js";
 import { getSignedUrlHandler } from "./routes/get-url.js";
+// import { addFeedRoute } from "./routes/add-feed.js";
+// import { editFeedRoute } from "./routes/edit-feed.js";
+// import { deleteFeedRoute } from "./routes/delete-feed.js";
+// import { feedsRoute } from "./routes/feeds.js";
+import { feedsRoute } from "./routes/feed.js";
+import { addFeedRoute } from "./routes/feed.js";
+import { editFeedRoute } from "./routes/feed.js";
+import { deleteFeedRoute } from "./routes/feed.js";
 
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
@@ -52,6 +60,12 @@ publicRoutes.route("/api", userRoute);
 publicRoutes.route("/api", usersRoute);
 publicRoutes.get("/api/get-url", getSignedUrlHandler);
 publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
+
+// Feeds Routes
+// publicRoutes.post("/api/add-feed", addFeedRoute);
+// publicRoutes.put("/api/edit-feed/:feed_id", editFeedRoute);
+// publicRoutes.delete("/api/delete-feed/:feed_id", deleteFeedRoute);
+
 app.route("/", publicRoutes);
 
 // Protected Routes
@@ -71,6 +85,14 @@ protectedRoutesValidateJWT.post(
 );
 protectedRoutesValidateJWT.delete("/api/connections", deleteConnectionHandler);
 protectedRoutesValidateJWT.put("/api/profile/:user_id", updateProfileHandler);
+// protectedRoutesValidateJWT.get("/api/feeds", feedsRoute);
+// protectedRoutesValidateJWT.post("/api/add-feed", addFeedRoute);
+// protectedRoutesValidateJWT.put("/api/edit-feed/:feed_id", editFeedRoute);
+// protectedRoutesValidateJWT.delete("/api/delete-feed/:feed_id", deleteFeedRoute);
+protectedRoutesValidateJWT.get("/api/feed", feedsRoute);
+protectedRoutesValidateJWT.post("/api/feed", addFeedRoute);
+protectedRoutesValidateJWT.put("/api/feed/:feed_id", editFeedRoute);
+protectedRoutesValidateJWT.delete("/api/feed/:feed_id", deleteFeedRoute);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
 app.route("/", protectedRoutesValidateJWT);
 
@@ -78,6 +100,7 @@ const protectedRouteProfileAccess = new Hono();
 protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
 protectedRouteProfileAccess.use("/api/*", profileAccessMiddleware);
 app.route("/", protectedRouteProfileAccess);
+
 
 // Start server
 const port = 3000;
