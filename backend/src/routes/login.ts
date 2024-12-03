@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { setCookie } from "hono/cookie";
 
 dotenv.config();
 
@@ -48,8 +49,12 @@ loginRoute.post("/login", async (c) => {
       expiresIn: TOKEN_EXPIRATION,
     });
 
-    // Set token in cookie (note: Add HttpOnly later)
-    c.header("Set-Cookie", `token=${token}; Max-Age=${TOKEN_EXPIRATION}`);
+    setCookie(c, "token", token, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 3600,
+      sameSite: "None",
+    });
 
     return c.json({
       success: true,

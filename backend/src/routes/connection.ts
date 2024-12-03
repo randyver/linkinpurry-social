@@ -1,5 +1,5 @@
-import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
+import type { Context } from "hono";
 
 const prisma = new PrismaClient();
 
@@ -28,7 +28,7 @@ function errorResponse(
 /**
  * Get list of connections
  */
-export const getConnectionsHandler = async (c: any) => {
+export const getConnectionsHandler = async (c: Context) => {
   try {
     const userIdParam = c.req.param("user_id");
     const page = parseInt(c.req.query("page") || "1", 10);
@@ -66,7 +66,7 @@ export const getConnectionsHandler = async (c: any) => {
       toId: connection.toId.toString(),
       name: connection.to.name,
       username: connection.to.username,
-      profilePhotoPath: connection.to.profilePhotoPath,
+      profilePhotoPath: connection.to.profilePhotoPath || "/default-avatar.png",
       createdAt: connection.createdAt.toISOString(),
     }));
 
@@ -90,7 +90,7 @@ export const getConnectionsHandler = async (c: any) => {
 /**
  * Send a connection request
  */
-export const sendConnectionRequestHandler = async (c: any) => {
+export const sendConnectionRequestHandler = async (c: Context) => {
   try {
     const { requestToId } = await c.req.json();
     const user = c.get("user");
@@ -154,7 +154,7 @@ export const sendConnectionRequestHandler = async (c: any) => {
 /**
  * Get pending connection requests
  */
-export const getConnectionRequestsHandler = async (c: any) => {
+export const getConnectionRequestsHandler = async (c: Context) => {
   try {
     const user = c.get("user");
 
@@ -200,7 +200,7 @@ export const getConnectionRequestsHandler = async (c: any) => {
 /**
  * Accept or reject a connection request
  */
-export const acceptOrRejectRequestHandler = async (c: any) => {
+export const acceptOrRejectRequestHandler = async (c: Context) => {
   try {
     const action = c.req.param("action");
     const { fromId } = await c.req.json();
@@ -249,7 +249,7 @@ export const acceptOrRejectRequestHandler = async (c: any) => {
 /**
  * Delete a connection
  */
-export const deleteConnectionHandler = async (c: any) => {
+export const deleteConnectionHandler = async (c: Context) => {
   try {
     const { connectionToId } = await c.req.json();
     const user = c.get("user");
