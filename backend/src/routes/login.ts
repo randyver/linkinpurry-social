@@ -42,6 +42,7 @@ loginRoute.post("/login", async (c) => {
       email: user.email,
       username: user.username,
       fullname: user.name,
+      profilePhotoPath: user.profilePhotoPath,
     };
 
     const token = jwt.sign(payload, SECRET_KEY, {

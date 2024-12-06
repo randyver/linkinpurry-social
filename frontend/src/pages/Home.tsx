@@ -61,8 +61,7 @@ export default function Home(){
               username={user.username}
               email={user.email}
               fullName={user.fullname}
-              profilePhotoPath="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
-              connections={0}
+              profilePhotoPath={user.profilePhotoPath}
             />
           </div>
         )}
@@ -76,19 +75,19 @@ export default function Home(){
               {/* Profile Card and AddFeed Form */}
               <Card className="p-4 flex items-center">
                 <img
-                  src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
+                  src={user.profilePhotoPath}
                   alt="Profile"
                   className="w-12 h-12 rounded-full mr-4"
                 />
                 <AddFeed
                   fullname={user.fullname}
                   userId={Number(user.userId)}
+                  photo={user.profilePhotoPath}
                 />
               </Card>
 
               <div className="flex justify-between items-center text-sm text-gray-500">
                 <hr className="flex-grow border-gray-300" />
-                <span className="px-2">Sort by: Top</span>
               </div>
 
               {/* Feed Component */}

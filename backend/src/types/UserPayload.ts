@@ -3,4 +3,5 @@ export type UserPayload = {
   email: string;
   username: string;
   fullname: string;
+  profilePhotoPath: string;
 };

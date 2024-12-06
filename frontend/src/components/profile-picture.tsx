@@ -1,18 +1,10 @@
 type ProfilePictureProps = {
-  size?: 'sm' | 'md' | 'lg';
-  src?: string;
-  className?: string;
-};
+  src: string
+}
 
-export const ProfilePicture = ({ size = 'md', src = 'https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp', className }: ProfilePictureProps) => {
-  const sizeClasses = {
-    sm: 'w-10 h-10',
-    md: 'w-16 h-16',
-    lg: 'w-24 h-24',
-  };
-
+export const ProfilePicture = ({ src }: ProfilePictureProps) => {
   return (
-    <div className={`${sizeClasses[size]} rounded-full overflow-hidden border-4 border-white ${className}`}>
+    <div className='lg rounded-full overflow-hidden border-4 border-white w-24 h-24'>
       <img
         src={src}
         alt="Profile"
