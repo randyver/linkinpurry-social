@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface AddFeedProps {
   fullname: string;
@@ -33,17 +34,16 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId, photo }) => {
           throw new Error("Failed to create feed");
         }
 
-        const data = await response.json();
-        console.log("Feed created:", data);
+        toast.success("Feed posted successfully");
 
         setPostContent("");
         setIsOpen(false);
       } catch (error) {
         console.error("Error posting feed:", error);
-        alert("Failed to create post");
+        toast.error("Failed to post feed");
       }
     } else {
-      alert("Please write something before posting.");
+      toast.error("Feed content cannot be empty");
     }
   };
 

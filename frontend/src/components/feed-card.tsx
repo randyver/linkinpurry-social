@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { useState, useEffect, useRef } from "react";
 import EditFeed from "./edit-feed";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 interface FeedCardProps {
   profilePhoto: string;
@@ -69,10 +70,10 @@ export const FeedCard = ({
 
       setIsDeleteModalOpen(false);
       setIsMenuOpen(false);
-      alert("Feed deleted successfully!");
+      toast.success("Feed deleted successfully");
     } catch (error) {
       console.error("Failed to delete feed:", error);
-      alert("Failed to delete feed");
+      toast.error("Failed to delete feed");
     } finally {
       setIsDeleting(false);
     }
