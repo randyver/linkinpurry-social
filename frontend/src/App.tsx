@@ -45,6 +45,7 @@ function Layout() {
         <Route path="/requests/user/:userId" element={<Requests />} />
         <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/messages/:oppositeUser" element={<Messages />} />
       </Routes>
       {isStickyFooter ? <StickyFooter /> : <Footer />}
     </>
