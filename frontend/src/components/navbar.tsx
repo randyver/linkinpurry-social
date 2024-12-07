@@ -88,7 +88,7 @@ function Navbar() {
     <nav className="bg-wbd-secondary py-4 shadow-sm fixed top-0 w-full z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4">
         <div>
-          <Link to="/" className="flex items-center">
+          <Link to="/home" className="flex items-center">
             <LinkinPurryLogo width={200} />
           </Link>
         </div>
@@ -99,7 +99,7 @@ function Navbar() {
               {[
                 {
                   name: "Home",
-                  to: "/",
+                  to: "/home",
                   icon: <House size={24} className="text-wbd-primary" />,
                   key: "home",
                 },

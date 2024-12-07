@@ -15,7 +15,7 @@ export default function NotFound() {
         </p>
         <Button
           onClick={() => {
-            navigate("/");
+            navigate("/home");
           }}
         >
           Go Home

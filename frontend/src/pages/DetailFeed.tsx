@@ -100,7 +100,7 @@ export default function DetailFeed() {
         throw new Error("Failed to delete feed.");
       }
       toast.success("Feed deleted successfully.");
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       console.error("Error deleting feed:", error);
       toast.error("Failed to delete feed.");
