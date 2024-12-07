@@ -163,7 +163,6 @@ export const FeedCard = ({
       {isEditModalOpen && (
         <EditFeed
           fullname={fullname}
-          userId={userId}
           feedId={feedId}
           initialContent={content}
           onClose={handleCloseEditModal}
