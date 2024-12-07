@@ -19,16 +19,17 @@ const s3 = new S3Client({
  */
 export const getProfileHandler = async (c: Context) => {
   try {
+    console.log("here");
     const userIdParam = c.req.param("user_id");
     const targetUserId = parseInt(userIdParam, 10);
     const loggedInUserIdParam = c.req.query("logged_in_user_id");
     const loggedInUserId = loggedInUserIdParam
       ? parseInt(loggedInUserIdParam, 10)
-      : null;
+      : 0;
 
-    if (isNaN(targetUserId) || !loggedInUserId || (loggedInUserId && isNaN(loggedInUserId))) {
-      return c.json({ success: false, message: "Invalid user ID" }, 400);
-    }
+    // if (isNaN(targetUserId) || !loggedInUserId || (loggedInUserId && isNaN(loggedInUserId))) {
+    //   return c.json({ success: false, message: "Invalid user ID" }, 400);
+    // }
 
     const access = c.get("access");
     let userFields: any = {
@@ -100,6 +101,7 @@ export const getProfileHandler = async (c: Context) => {
  */
 export const updateProfileHandler = async (c: Context) => {
   try {
+    console.log("here");
     const userIdParam = c.req.param("user_id");
     const userId = parseInt(userIdParam, 10);
 

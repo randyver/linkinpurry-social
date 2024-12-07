@@ -21,24 +21,21 @@ import {
 } from "./routes/connection.js";
 import { getProfileHandler, updateProfileHandler } from "./routes/profile.js";
 import { getSignedUrlHandler } from "./routes/get-url.js";
-// import { addFeedRoute } from "./routes/add-feed.js";
-// import { editFeedRoute } from "./routes/edit-feed.js";
-// import { deleteFeedRoute } from "./routes/delete-feed.js";
-// import { feedsRoute } from "./routes/feeds.js";
-import { feedsRoute } from "./routes/feed.js";
-import { addFeedRoute } from "./routes/feed.js";
-import { editFeedRoute } from "./routes/feed.js";
-import { deleteFeedRoute } from "./routes/feed.js";
-import { detailFeedRoute } from "./routes/feed.js";
+import {
+  feedsRoute,
+  addFeedRoute,
+  editFeedRoute,
+  deleteFeedRoute,
+  detailFeedRoute,
+} from "./routes/feed.js";
 import { savePushSubscription } from "./routes/save-push-subscription.js";
+import { getChatHistoryHandler } from "./routes/messages.js";
 import { notifyChatHandler } from "./routes/notify-chat.js";
 
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
 import { profileAccessMiddleware } from "./middleware/profileAccess.js";
-import { Server } from "socket.io";
-import { Server as HttpServer } from "http";
-import { getChatHistoryHandler } from "./routes/messages.js";
+
 import { attachSocket } from "./socket.js";
 
 export const app = new Hono();
@@ -57,7 +54,7 @@ app.use(
 // Base route
 app.get("/", (c) => c.text("Hello Hono!"));
 
-app.get('/api/vapid-key', (c) => {
+app.get("/api/vapid-key", (c) => {
   const vapidKey = process.env.VAPID_PUBLIC_KEY!;
   console.log("VAPID Key:", vapidKey);
   if (!vapidKey) {
@@ -76,15 +73,14 @@ publicRoutes.route("/api", userRoute);
 publicRoutes.route("/api", usersRoute);
 publicRoutes.get("/api/get-url", getSignedUrlHandler);
 publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
-
-// Feeds Routes
-// publicRoutes.post("/api/add-feed", addFeedRoute);
-// publicRoutes.put("/api/edit-feed/:feed_id", editFeedRoute);
-// publicRoutes.delete("/api/delete-feed/:feed_id", deleteFeedRoute);
-
 app.route("/", publicRoutes);
 
 // Protected Routes
+const protectedRouteProfileAccess = new Hono();
+protectedRouteProfileAccess.use("/api/profile/:user_id", profileAccessMiddleware);
+protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
+app.route("/", protectedRouteProfileAccess);
+
 const protectedRoutesValidateJWT = new Hono();
 protectedRoutesValidateJWT.use("/api/*", validateJWT);
 protectedRoutesValidateJWT.post(
@@ -101,29 +97,18 @@ protectedRoutesValidateJWT.post(
 );
 protectedRoutesValidateJWT.delete("/api/connections", deleteConnectionHandler);
 protectedRoutesValidateJWT.put("/api/profile/:user_id", updateProfileHandler);
-// protectedRoutesValidateJWT.get("/api/feeds", feedsRoute);
-// protectedRoutesValidateJWT.post("/api/add-feed", addFeedRoute);
-// protectedRoutesValidateJWT.put("/api/edit-feed/:feed_id", editFeedRoute);
-// protectedRoutesValidateJWT.delete("/api/delete-feed/:feed_id", deleteFeedRoute);
 protectedRoutesValidateJWT.get("/api/feed", feedsRoute);
 protectedRoutesValidateJWT.post("/api/feed", addFeedRoute);
 protectedRoutesValidateJWT.put("/api/feed/:feed_id", editFeedRoute);
 protectedRoutesValidateJWT.delete("/api/feed/:feed_id", deleteFeedRoute);
 protectedRoutesValidateJWT.get("/api/feed/:feed_id", detailFeedRoute);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
-protectedRoutesValidateJWT.post("/api/save-push-subscription", savePushSubscription);
 protectedRoutesValidateJWT.get(
   "/api/chat/:userId/:oppositeUserId",
   getChatHistoryHandler
 );
 protectedRoutesValidateJWT.post("/api/notify-chat", notifyChatHandler);
 app.route("/", protectedRoutesValidateJWT);
-
-const protectedRouteProfileAccess = new Hono();
-protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
-protectedRouteProfileAccess.use("/api/*", profileAccessMiddleware);
-app.route("/", protectedRouteProfileAccess);
-
 
 // Start server
 const port = 3000;

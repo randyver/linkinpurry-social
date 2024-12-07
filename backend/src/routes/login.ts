@@ -66,7 +66,7 @@ loginRoute.post("/login", async (c) => {
     });
   } catch (error) {
     console.error(error);
-    return c.json({ success: false, message: "Failed to login" }, 400);
+    return c.json({ success: false, message: "Failed to login" }, 500);
   }
 });
 

@@ -16,6 +16,8 @@ export async function profileAccessMiddleware(c: Context, next: () => Promise<vo
   const userIdParam = c.req.param("user_id");
   const targetUserId = parseInt(userIdParam, 10);
 
+  console.log(userIdParam);
+
   if (isNaN(targetUserId)) {
     return c.json({ success: false, message: "Invalid user ID" }, 400);
   }

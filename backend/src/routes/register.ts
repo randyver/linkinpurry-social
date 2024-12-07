@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Hono } from "hono";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken"; // Add this line to use JWT for token generation
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 const registerRoute = new Hono();
@@ -11,7 +11,6 @@ registerRoute.post("/register", async (c) => {
     const formData = await c.req.json();
     const { username, name, email, password } = formData;
 
-    // Check if username or email already exists
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [{ username }, { email }],
@@ -22,7 +21,6 @@ registerRoute.post("/register", async (c) => {
       return c.json({ success: false, message: "Username or email already exists", body: {} }, 400);
     }
 
-    // Hash password before saving to database
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
@@ -35,10 +33,8 @@ registerRoute.post("/register", async (c) => {
       },
     });
 
-    // Convert BigInt to string
     const userIdString = newUser.id.toString();
 
-    // Generate a token (for example, using JWT)
     const token = jwt.sign(
       { userId: userIdString, username: newUser.username },
       process.env.JWT_SECRET || "your-secret-key",

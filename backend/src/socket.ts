@@ -20,41 +20,41 @@ export const attachSocket = (httpServer: any) => {
   io.use((socket, next) => {
     const cookieHeader = socket.request.headers.cookie;
     if (!cookieHeader) return next(new Error("Authentication error"));
-  
+
     const cookies = parse(cookieHeader);
     const token = cookies.token;
-  
+
     if (!token) return next(new Error("Authentication error"));
-  
+
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
       if (err) return next(new Error("Authentication error"));
       socket.data.username = (decoded as UserPayload).userId;
       next();
     });
   });
-  
+
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
-  
+
     socket.on("joinRoom", (userId) => {
       console.log(`User ${userId} joined their room`);
       socket.join(userId);
     });
-  
+
     socket.on("sendMessage", async (data) => {
       const { senderId, receiverId, message, timestamp } = data;
       const validatedSenderId = socket.data.username;
-  
+
       if (senderId !== validatedSenderId) {
         console.log("Sender ID not validated");
         return socket.emit("error", "Sender ID not validated");
       }
-  
+
       if (validatedSenderId === receiverId) {
         console.log("You cannot send a message to yourself");
         return socket.emit("error", "You cannot send a message to yourself");
       }
-  
+
       const receiver = await prisma.user.findUnique({
         where: { id: receiverId },
       });
@@ -62,10 +62,10 @@ export const attachSocket = (httpServer: any) => {
         console.log("Receiver not found");
         return socket.emit("error", "Receiver not found");
       }
-  
+
       try {
         await saveMessage(validatedSenderId, receiverId, message, timestamp);
-  
+
         io.to(receiverId).emit("receiveMessage", {
           senderId: validatedSenderId,
           message,
@@ -76,12 +76,12 @@ export const attachSocket = (httpServer: any) => {
         socket.emit("error", "Failed to save message");
       }
     });
-  
+
     socket.on("disconnect", () => {
       console.log("A user disconnected:", socket.id);
     });
   });
-}
+};
 
 async function saveMessage(
   senderId: string,
@@ -99,8 +99,3 @@ async function saveMessage(
     },
   });
 }
-
-// const port = 4000;
-// server.listen(port, () => {
-//   console.log(`WS Server running on http://localhost:${port}`);
-// });
