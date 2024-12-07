@@ -127,7 +127,7 @@ function Navbar() {
                 },
                 {
                   name: "Chat",
-                  to: "",
+                  to: "/messages",
                   icon: (
                     <MessageSquareText size={24} className="text-wbd-primary" />
                   ),

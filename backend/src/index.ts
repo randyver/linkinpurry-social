@@ -30,6 +30,7 @@ import { addFeedRoute } from "./routes/feed.js";
 import { editFeedRoute } from "./routes/feed.js";
 import { deleteFeedRoute } from "./routes/feed.js";
 import { savePushSubscription } from "./routes/save-push-subscription.js";
+import { notifyChatHandler } from "./routes/notify-chat.js";
 
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
@@ -113,6 +114,7 @@ protectedRoutesValidateJWT.get(
   "/api/chat/:userId/:oppositeUserId",
   getChatHistoryHandler
 );
+protectedRoutesValidateJWT.post("/api/notify-chat", notifyChatHandler);
 app.route("/", protectedRoutesValidateJWT);
 
 const protectedRouteProfileAccess = new Hono();

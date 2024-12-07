@@ -121,6 +121,16 @@ function Messages() {
 
     setChatHistory((prev) => [...prev, newChatMessage]);
     setNewMessage("");
+
+    await fetch("http://localhost:3000/api/notify-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        senderId: currentUser,
+        receiverId: selectedUser.id,
+        message: newMessage,
+      }),
+    }).catch((err) => console.error("Failed to notify chat:", err));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
