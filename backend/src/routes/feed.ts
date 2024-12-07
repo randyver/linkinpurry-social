@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { notifyConnections } from "./notify-connections.js";
 
 const prisma = new PrismaClient();
 
@@ -8,7 +9,14 @@ export const feedsRoute = async (c: any) => {
     const userId = parseInt(user.userId, 10);
 
     if (!userId) {
-      return c.json({ error: "User ID is required" }, 400);
+      return c.json(
+        {
+          success: false,
+          message: "User ID is required",
+          body: null,
+        },
+        400
+      );
     }
 
     const cursor = c.req.query("cursor");
@@ -71,18 +79,31 @@ export const feedsRoute = async (c: any) => {
     }));
 
     return c.json({
-      feeds: serializedFeeds,
-      nextCursor,
+      success: true,
+      message: "Feeds fetched successfully",
+      body: {
+        cursor: nextCursor,
+        feeds: serializedFeeds,
+      },
     });
   } catch (error) {
     console.error("Error fetching feeds:", error);
-    return c.json({ error: "Failed to fetch feeds" }, 500);
+    return c.json(
+      {
+        success: false,
+        message: "Failed to fetch feeds",
+        body: null,
+      },
+      500
+    );
   }
 };
 
 export const addFeedRoute = async (c: any) => {
   try {
-    const { content, userId } = await c.req.json();
+    const user = c.get("user");
+    const userId = parseInt(user.userId, 10);
+    const { content } = await c.req.json();
 
     const newFeed = await prisma.feed.create({
       data: {
@@ -92,7 +113,13 @@ export const addFeedRoute = async (c: any) => {
       },
     });
 
+    console.log("Notifying connections about new feed:", newFeed.id.toString());
+    notifyConnections(BigInt(userId), newFeed.id.toString()).catch((err) => {
+      console.error("Failed to notify connections:", err);
+    });
+
     return c.json({ id: newFeed.id.toString(), content: newFeed.content }, 201);
+
   } catch (error) {
     console.error(error);
     return c.json({ error: "Failed to create feed" }, 500);
@@ -109,7 +136,7 @@ export const editFeedRoute = async (c: any) => {
       data: { content },
     });
 
-    return c.json({ id: feed.id.toString(), content: feed.content });
+    return c.json({ content: feed.content });
   } catch (error) {
     console.error("Failed to update feed:", error);
     return c.json({ error: "Failed to update feed" }, 500);

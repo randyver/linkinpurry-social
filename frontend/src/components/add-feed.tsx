@@ -6,11 +6,10 @@ import { toast } from "react-hot-toast";
 
 interface AddFeedProps {
   fullname: string;
-  userId: number;
   photo: string;
 }
 
-const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId, photo }) => {
+const AddFeed: React.FC<AddFeedProps> = ({ fullname, photo }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
   const maxLength = 280;
@@ -26,7 +25,6 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId, photo }) => {
           },
           body: JSON.stringify({
             content: postContent,
-            userId: userId,
           }),
         });
 

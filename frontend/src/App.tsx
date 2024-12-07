@@ -49,6 +49,7 @@ function Layout() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/not-found" element={<NotFound />} />
         <Route path="/feed/:feedId" element={<DetailFeed />} />
+        <Route path="/messages/:oppositeUser" element={<Messages />} />
       </Routes>
       {isStickyFooter ? <StickyFooter /> : <Footer />}
     </>

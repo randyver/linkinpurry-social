@@ -45,10 +45,10 @@ export default function Feed({ currentUser }: FeedProps) {
       isLoadingRef.current = true;
 
       const url = new URL("http://localhost:3000/api/feed");
-      url.searchParams.append("limit", LIMIT.toString());
       if (cursor) {
         url.searchParams.append("cursor", cursor);
       }
+      url.searchParams.append("limit", LIMIT.toString());
 
       const response = await fetch(url.toString(), {
         credentials: "include",
@@ -60,15 +60,16 @@ export default function Feed({ currentUser }: FeedProps) {
 
       const data = await response.json();
 
-      if (data) {
-        setFeeds((prevFeeds) => {
-          const newFeeds = cursor ? [...prevFeeds, ...data.feeds] : data.feeds;
-          return newFeeds;
-        });
+      if (data.success) {
+        const { cursor: nextCursor, feeds: fetchedFeeds } = data.body;
 
-        setHasMore(data.feeds.length === LIMIT);
+        setFeeds((prevFeeds) =>
+          cursor ? [...prevFeeds, ...fetchedFeeds] : fetchedFeeds
+        );
+
+        setHasMore(nextCursor !== null);
       } else {
-        console.error("Failed to fetch feeds:", data.error || "Unknown error");
+        console.error("Failed to fetch feeds:", data.message);
       }
     } catch (error) {
       console.error("Error fetching feeds:", error);

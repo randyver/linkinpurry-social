@@ -116,7 +116,6 @@ export default function Home() {
                 />
                 <AddFeed
                   fullname={user.fullname}
-                  userId={Number(user.userId)}
                   photo={user.profilePhotoPath}
                 />
               </Card>

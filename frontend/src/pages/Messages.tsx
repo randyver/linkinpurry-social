@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { format } from "date-fns";
 
 interface ConnectedUser {
-  id: string;
-  profilePhotoPath: string;
+  toId: string;
+  name: string;
   username: string;
+  profilePhotoPath: string;
 }
 
 interface ChatMessage {
@@ -21,6 +23,9 @@ const socket = io("http://localhost:3000", {
 });
 
 function Messages() {
+  const navigate = useNavigate();
+  const { oppositeUser } = useParams();
+
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -44,6 +49,38 @@ function Messages() {
   }, []);
 
   useEffect(() => {
+    const fetchChatHistory = async () => {
+      if (oppositeUser) {
+        // Fetch user details or chat history for the selected user
+        const user = connectedUsers.find((u) => u.toId === oppositeUser);
+        if (user) {
+          setSelectedUser(user);
+
+          if (!currentUser) return;
+
+          // Fetch chat history
+          const response = await fetch(
+            `http://localhost:3000/api/chat/${currentUser}/${user.toId}`,
+            {
+              credentials: "include",
+            },
+          );
+          const data = await response.json();
+          console.log(data);
+          if (data.success) {
+            setChatHistory(data.data);
+          }
+
+          // Join the room for real-time messaging
+          socket.emit("joinRoom", currentUser);
+        }
+      }
+    };
+
+    fetchChatHistory();
+  }, [oppositeUser, connectedUsers, currentUser]);
+
+  useEffect(() => {
     const fetchConnections = async () => {
       if (!currentUser) return;
 
@@ -65,7 +102,7 @@ function Messages() {
 
   useEffect(() => {
     socket.on("receiveMessage", (data) => {
-      if (selectedUser && selectedUser.id === data.senderId) {
+      if (selectedUser && selectedUser.toId === data.senderId) {
         console.log("Received message:", data);
         setChatHistory((prev) => [...prev, data]);
       }
@@ -76,34 +113,16 @@ function Messages() {
     };
   }, [selectedUser]);
 
-  const selectChat = useCallback(
-    async (user: ConnectedUser) => {
-      setSelectedUser(user);
-
-      if (!currentUser) return;
-      const response = await fetch(
-        `http://localhost:3000/api/chat/${currentUser}/${user.id}`,
-        {
-          credentials: "include",
-        },
-      );
-      const data = await response.json();
-      console.log(data);
-      if (data.success) {
-        setChatHistory(data.data);
-      }
-
-      socket.emit("joinRoom", currentUser);
-    },
-    [currentUser],
-  );
+  const selectChat = useCallback((user: ConnectedUser) => {
+    navigate(`/messages/${user.toId}`);
+  }, []);
 
   const sendMessage = async () => {
     if (!newMessage || !selectedUser || !currentUser) return;
 
     const messageData: ChatMessage = {
       senderId: currentUser,
-      receiverId: selectedUser.id,
+      receiverId: selectedUser.toId,
       message: newMessage,
       timestamp: new Date().toISOString(),
     };
@@ -121,6 +140,16 @@ function Messages() {
 
     setChatHistory((prev) => [...prev, newChatMessage]);
     setNewMessage("");
+
+    await fetch("http://localhost:3000/api/notify-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        senderId: currentUser,
+        receiverId: selectedUser.toId,
+        message: newMessage,
+      }),
+    }).catch((err) => console.error("Failed to notify chat:", err));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -138,7 +167,6 @@ function Messages() {
   return (
     <div className="bg-wbd-background h-screen flex items-center justify-center">
       <div className="flex min-h-[600px] w-3/5 bg-wbd-background mt-16">
-
         <div className="w-1/3 bg-wbd-secondary p-6 border-r-4 border-wbd-background rounded-lg">
           <h2 className="text-2xl font-semibold text-wbd-text mb-6">
             Connected Users
@@ -146,7 +174,7 @@ function Messages() {
           <ul className="space-y-4">
             {connectedUsers.map((user) => (
               <li
-                key={user.id}
+                key={user.toId}
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-wbd-tertiary cursor-pointer"
                 onClick={() => selectChat(user)}
               >
@@ -197,7 +225,10 @@ function Messages() {
                               : "text-gray-500"
                           } mt-1`}
                         >
-                          {format(new Date(msg.timestamp), "MMM dd, yyyy hh:mm a")}
+                          {format(
+                            new Date(msg.timestamp),
+                            "MMM dd, yyyy hh:mm a",
+                          )}
                         </p>
                       </div>
                     </div>
@@ -224,7 +255,8 @@ function Messages() {
             </>
           ) : (
             <p className="text-wbd-text text-xl font-medium text-center mt-12">
-              Connect with users to start chatting. Select a user from the list to begin!
+              Connect with users to start chatting. Select a user from the list
+              to begin!
             </p>
           )}
         </div>

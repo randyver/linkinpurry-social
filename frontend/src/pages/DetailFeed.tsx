@@ -178,8 +178,8 @@ export default function DetailFeed() {
 
         {isEditModalOpen && (
           <EditFeed
-            fullname={feed.user.fullname}
-            userId={Number(feed.user.id)}
+            fullname={feed.user.name}
+            photo={feed.user.profilePhotoPath}
             feedId={feed.id}
             initialContent={feed.content}
             onClose={() => setIsEditModalOpen(false)}

@@ -127,7 +127,7 @@ function Navbar() {
                 },
                 {
                   name: "Chat",
-                  to: "",
+                  to: "/messages",
                   icon: (
                     <MessageSquareText size={24} className="text-wbd-primary" />
                   ),
@@ -187,12 +187,6 @@ function Navbar() {
                     className="block px-4 py-2 text-wbd-primary text-sm hover:bg-gray-100"
                   >
                     Profile
-                  </Link>
-                  <Link
-                    to="/messages"
-                    className="block px-4 py-2 text-sm text-wbd-primary hover:bg-gray-100"
-                  >
-                    Messages
                   </Link>
                   <button
                     className="block px-4 py-2 text-sm text-wbd-primary hover:bg-gray-100 hover:text-wbd-red w-full text-left"
