@@ -134,8 +134,10 @@ export default function Feed({ currentUser }: FeedProps) {
 
       <div ref={observerTarget} />
       {loading && (
-        <div className="flex justify-center text-black items-center min-h-[200px]">
-          Loading feeds...
+        <div className="flex justify-center space-x-2 mt-20">
+          <div className="w-6 h-6 bg-wbd-highlight rounded-full animate-bounce"></div>
+          <div className="w-6 h-6 bg-wbd-highlight rounded-full animate-bounce delay-100"></div>
+          <div className="w-6 h-6 bg-wbd-highlight rounded-full animate-bounce delay-200"></div>
         </div>
       )}
       {!hasMore && feeds.length > 0 && (
