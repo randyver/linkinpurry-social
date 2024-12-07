@@ -11,6 +11,8 @@ import Requests from "./pages/Requests";
 import Footer from "./components/footer";
 import StickyFooter from "./components/sticky-footer";
 import Messages from "./pages/Messages";
+import NotFound from "./pages/NotFound";
+import DetailFeed from "./pages/DetailFeed";
 
 function App() {
   return (
@@ -45,6 +47,8 @@ function Layout() {
         <Route path="/requests/user/:userId" element={<Requests />} />
         <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/not-found" element={<NotFound />} />
+        <Route path="/feed/:feedId" element={<DetailFeed />} />
         <Route path="/messages/:oppositeUser" element={<Messages />} />
       </Routes>
       {isStickyFooter ? <StickyFooter /> : <Footer />}

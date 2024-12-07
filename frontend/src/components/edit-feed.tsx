@@ -6,12 +6,13 @@ import { toast } from "react-hot-toast";
 
 interface EditFeedProps {
   fullname: string;
+  photo: string;
   feedId: number;
   initialContent: string;
   onClose: () => void;
 }
 
-const EditFeed: React.FC<EditFeedProps> = ({ fullname, feedId, initialContent, onClose }) => {
+const EditFeed: React.FC<EditFeedProps> = ({ fullname, feedId, initialContent, photo, onClose }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [postContent, setPostContent] = useState(initialContent);
   const maxLength = 280;
@@ -88,7 +89,7 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, feedId, initialContent, o
             {/* User Profile Info */}
             <div className="flex items-center mb-4">
               <img
-                src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
+                src={photo}
                 alt="Profile"
                 className="w-12 h-12 rounded-full mr-4"
               />
