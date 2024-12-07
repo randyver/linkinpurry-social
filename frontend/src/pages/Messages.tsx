@@ -3,9 +3,10 @@ import { io } from "socket.io-client";
 import { format } from "date-fns";
 
 interface ConnectedUser {
-  id: string;
-  profilePhotoPath: string;
+  toId: string;
+  name: string;
   username: string;
+  profilePhotoPath: string;
 }
 
 interface ChatMessage {
@@ -65,7 +66,7 @@ function Messages() {
 
   useEffect(() => {
     socket.on("receiveMessage", (data) => {
-      if (selectedUser && selectedUser.id === data.senderId) {
+      if (selectedUser && selectedUser.toId === data.senderId) {
         console.log("Received message:", data);
         setChatHistory((prev) => [...prev, data]);
       }
@@ -82,7 +83,7 @@ function Messages() {
 
       if (!currentUser) return;
       const response = await fetch(
-        `http://localhost:3000/api/chat/${currentUser}/${user.id}`,
+        `http://localhost:3000/api/chat/${currentUser}/${user.toId}`,
         {
           credentials: "include",
         },
@@ -103,7 +104,7 @@ function Messages() {
 
     const messageData: ChatMessage = {
       senderId: currentUser,
-      receiverId: selectedUser.id,
+      receiverId: selectedUser.toId,
       message: newMessage,
       timestamp: new Date().toISOString(),
     };
@@ -127,7 +128,7 @@ function Messages() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         senderId: currentUser,
-        receiverId: selectedUser.id,
+        receiverId: selectedUser.toId,
         message: newMessage,
       }),
     }).catch((err) => console.error("Failed to notify chat:", err));
@@ -156,7 +157,7 @@ function Messages() {
           <ul className="space-y-4">
             {connectedUsers.map((user) => (
               <li
-                key={user.id}
+                key={user.toId}
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-wbd-tertiary cursor-pointer"
                 onClick={() => selectChat(user)}
               >
