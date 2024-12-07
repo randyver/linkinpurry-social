@@ -127,7 +127,7 @@ export default function Login() {
       if (Notification.permission === "granted") {
         await registerPushSubscription();
       }
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       toast.dismiss();
       toast.error("An error occurred while logging in. Please try again later.");

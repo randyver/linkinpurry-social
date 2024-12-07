@@ -1,9 +1,8 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { MessageSquareText } from "lucide-react";
+import { MessageSquareText, Menu, X } from "lucide-react";
 
 import { Button } from "./ui/button";
-
 import LinkinPurryLogo from "./image/linkinpurry-logo";
 import {
   UsersRound,
@@ -12,6 +11,7 @@ import {
   ChevronUp,
   House,
   Compass,
+  LogOut,
 } from "lucide-react";
 
 interface User {
@@ -28,7 +28,7 @@ function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [hovered, setHovered] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -84,135 +84,171 @@ function Navbar() {
     }
   };
 
+  const menuItems = [
+    {
+      name: "Home",
+      to: "/home",
+      icon: <House size={24} className="text-wbd-primary" />,
+    },
+    {
+      name: "Explore",
+      to: "/userlist",
+      icon: <Compass size={24} className="text-wbd-primary" />,
+    },
+    {
+      name: "Network",
+      to: `/connections/user/${user?.id}`,
+      icon: <UsersRound size={24} className="text-wbd-primary" />,
+    },
+    {
+      name: "Requests",
+      to: `/requests/user/${user?.id}`,
+      icon: <UserRoundPlus size={24} className="text-wbd-primary" />,
+    },
+    {
+      name: "Chat",
+      to: "/messages",
+      icon: <MessageSquareText size={24} className="text-wbd-primary" />,
+    },
+  ];
+
   return (
     <nav className="bg-wbd-secondary py-4 shadow-sm fixed top-0 w-full z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4">
+        {/* Logo */}
         <div>
-          <Link to="/" className="flex items-center">
+          <Link to="/home" className="flex items-center">
             <LinkinPurryLogo width={200} />
           </Link>
         </div>
 
-        {isLoggedIn ? (
-          <div className="space-x-12 flex items-center">
-            <div className="flex space-x-12 items-center">
-              {[
-                {
-                  name: "Home",
-                  to: "/",
-                  icon: <House size={24} className="text-wbd-primary" />,
-                  key: "home",
-                },
-                {
-                  name: "Explore",
-                  to: "/userlist",
-                  icon: <Compass size={24} className="text-wbd-primary" />,
-                  key: "explore",
-                },
-                {
-                  name: "Network",
-                  to: `/connections/user/${user?.id}`,
-                  icon: (
-                    <UsersRound size={24} className="text-wbd-primary" />
-                  ),
-                  key: "connections",
-                },
-                {
-                  name: "Requests",
-                  to: `/requests/user/${user?.id}`,
-                  icon: (
-                    <UserRoundPlus size={24} className="text-wbd-primary" />
-                  ),
-                  key: "requests",
-                },
-                {
-                  name: "Chat",
-                  to: "/messages",
-                  icon: (
-                    <MessageSquareText size={24} className="text-wbd-primary" />
-                  ),
-                  key: "chat",
-                },
-              ].map(({ name, to, icon, key }) => (
+        {/* Desktop Menu */}
+        <div className="hidden md:flex space-x-12 items-center">
+          {isLoggedIn ? (
+            <>
+              {menuItems.map(({ name, to, icon }, index) => (
                 <Link
-                  key={key}
+                  key={index}
                   to={to}
-                  className="relative flex flex-col items-center group flex-1 text-center"
-                  onMouseEnter={() => setHovered(key)}
-                  onMouseLeave={() => setHovered(null)}
+                  className="relative flex flex-col items-center group text-center"
                 >
                   {icon}
-                  <span className={`text-lg font-medium text-wbd-primary`}>
+                  <span className="text-lg font-medium text-wbd-primary">
                     {name}
                   </span>
-                  <span
-                    className={`absolute -bottom-4 left-1/2 transform -translate-x-1/2 h-1 bg-wbd-primary transition-all duration-300 rounded-full ${
-                      (location.pathname === to && hovered === null) ||
-                      hovered === key
-                        ? "w-24"
-                        : "w-0"
-                    }`}
-                  ></span>
                 </Link>
               ))}
-            </div>
-
-            <div className="relative flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-full overflow-hidden">
-                <img
-                  src={
-                    user?.profilePhotoPath
-                      ? user?.profilePhotoPath
-                      : "/default-profile-pic.png"
-                  }
-                  alt="User's Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <button
-                className="text-lg font-medium text-wbd-primary flex items-center relative"
-                onClick={() => setDropdownOpen((prev) => !prev)}
-              >
-                {user?.username}
-                {dropdownOpen ? (
-                  <ChevronUp className="ml-2" size={20} />
-                ) : (
-                  <ChevronDown className="ml-2" size={20} />
-                )}
-              </button>
-              {dropdownOpen && (
-                <div className="absolute top-full right-0 mt-4 bg-white shadow-lg rounded-md w-40 z-10">
-                  <Link
-                    to={`/profile/${user?.id}`}
-                    className="block px-4 py-2 text-wbd-primary text-sm hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    className="block px-4 py-2 text-sm text-wbd-primary hover:bg-gray-100 hover:text-wbd-red w-full text-left"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
+              <div className="relative flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-full overflow-hidden">
+                  <img
+                    src={
+                      user?.profilePhotoPath
+                        ? user?.profilePhotoPath
+                        : "/default-profile-pic.png"
+                    }
+                    alt="User's Profile"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="space-x-4 flex items-center">
-            <Link to="/login">
-              <Button variant="default" size="sm">
-                Log In
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button variant="default" size="sm">
-                Join Now
-              </Button>
-            </Link>
-          </div>
-        )}
+                <button
+                  className="text-lg font-medium text-wbd-primary flex items-center relative"
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                >
+                  {user?.username}
+                  {dropdownOpen ? (
+                    <ChevronUp className="ml-2" size={20} />
+                  ) : (
+                    <ChevronDown className="ml-2" size={20} />
+                  )}
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute top-full right-0 mt-4 bg-white shadow-lg rounded-md w-40 z-10">
+                    <Link
+                      to={`/profile/${user?.id}`}
+                      className="block px-4 py-2 text-wbd-primary text-sm hover:bg-gray-100"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      className="block px-4 py-2 text-sm text-wbd-primary hover:bg-gray-100 hover:text-wbd-red w-full text-left"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                <Button variant="default" size="sm">
+                  Log In
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button variant="default" size="sm">
+                  Join Now
+                </Button>
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Hamburger Menu */}
+        <div className="md:hidden flex items-center text-wbd-text">
+          <button onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X size={32} /> : <Menu size={32} />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="md:hidden flex flex-col space-y-8 mt-4 bg-wbd-secondary px-4 pb-4">
+          {isLoggedIn ? (
+            <>
+              {menuItems.map(({ name, to, icon }, index) => (
+                <Link
+                  key={index}
+                  to={to}
+                  className="flex items-center text-lg font-medium text-wbd-primary hover:scale-105 transition-transform"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <span className="mr-2">{icon}</span>
+                  {name}
+                </Link>
+              ))}
+              <button
+                className="flex items-center text-lg font-medium text-wbd-primary text-start hover:scale-105 transition-transform"
+                onClick={handleLogout}
+              >
+                <LogOut size={24} className="mr-2" />
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="flex items-center text-lg font-medium text-wbd-primary hover:scale-105 transition-transform"
+                onClick={() => setMenuOpen(false)}
+              >
+                <UserRoundPlus size={24} className="mr-2" />
+                Log In
+              </Link>
+              <Link
+                to="/register"
+                className="flex items-center text-lg font-medium text-wbd-primary hover:scale-105 transition-transform"
+                onClick={() => setMenuOpen(false)}
+              >
+                <UserRoundPlus size={24} className="mr-2" />
+                Join Now
+              </Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

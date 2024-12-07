@@ -13,6 +13,7 @@ import StickyFooter from "./components/sticky-footer";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 import DetailFeed from "./pages/DetailFeed";
+import Landing from "./pages/Landing";
 
 function App() {
   return (
@@ -39,7 +40,8 @@ function Layout() {
       <Navbar />
       <Toaster />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/userlist" element={<Users />} />
@@ -50,6 +52,7 @@ function Layout() {
         <Route path="/not-found" element={<NotFound />} />
         <Route path="/feed/:feedId" element={<DetailFeed />} />
         <Route path="/messages/:oppositeUser" element={<Messages />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       {isStickyFooter ? <StickyFooter /> : <Footer />}
     </>
