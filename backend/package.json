@@ -15,7 +15,8 @@
     "hono": "^4.6.11",
     "jsonwebtoken": "^9.0.2",
     "my-app": "file:",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
