@@ -34,8 +34,12 @@ import { savePushSubscription } from "./routes/save-push-subscription.js";
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
 import { profileAccessMiddleware } from "./middleware/profileAccess.js";
+import { Server } from "socket.io";
+import { Server as HttpServer } from "http";
+import { getChatHistoryHandler } from "./routes/messages.js";
+import { attachSocket } from "./socket.js";
 
-const app = new Hono();
+export const app = new Hono();
 
 // Middleware CORS
 app.use(
@@ -105,6 +109,10 @@ protectedRoutesValidateJWT.put("/api/feed/:feed_id", editFeedRoute);
 protectedRoutesValidateJWT.delete("/api/feed/:feed_id", deleteFeedRoute);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
 protectedRoutesValidateJWT.post("/api/save-push-subscription", savePushSubscription);
+protectedRoutesValidateJWT.get(
+  "/api/chat/:userId/:oppositeUserId",
+  getChatHistoryHandler
+);
 app.route("/", protectedRoutesValidateJWT);
 
 const protectedRouteProfileAccess = new Hono();
@@ -117,4 +125,5 @@ app.route("/", protectedRouteProfileAccess);
 const port = 3000;
 console.log(`Server running on http://localhost:${port}`);
 
-serve({ fetch: app.fetch, port });
+const server = serve({ fetch: app.fetch, port });
+attachSocket(server);
