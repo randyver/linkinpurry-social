@@ -25,7 +25,7 @@ export const getProfileHandler = async (c: Context) => {
     const loggedInUserIdParam = c.req.query("logged_in_user_id");
     const loggedInUserId = loggedInUserIdParam
       ? parseInt(loggedInUserIdParam, 10)
-      : 0;
+      : -1;
 
     // if (isNaN(targetUserId) || !loggedInUserId || (loggedInUserId && isNaN(loggedInUserId))) {
     //   return c.json({ success: false, message: "Invalid user ID" }, 400);
