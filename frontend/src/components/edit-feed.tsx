@@ -2,16 +2,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface EditFeedProps {
   fullname: string;
-  userId: number;
   feedId: number;
   initialContent: string;
   onClose: () => void;
 }
 
-const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialContent, onClose }) => {
+const EditFeed: React.FC<EditFeedProps> = ({ fullname, feedId, initialContent, onClose }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [postContent, setPostContent] = useState(initialContent);
   const maxLength = 280;
@@ -44,7 +44,6 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialCo
           },
           body: JSON.stringify({
             content: postContent,
-            userId: userId,
           }),
         });
 
@@ -52,19 +51,16 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialCo
           throw new Error("Failed to edit feed");
         }
 
-        const data = await response.json();
-        console.log("Feed edited:", data);
-
+        toast.success("Feed edited successfully");
+        
         setPostContent("");
         setIsOpen(false);
         onClose();
       } catch (error) {
         console.error("Error editing feed:", error);
-        alert("Failed to edit feed");
-      }
+        toast.error("Failed to edit feed");}
     } else {
-      alert("Please write something before editing.");
-    }
+      toast.error("Feed content cannot be empty");}
   };
 
   const characterCountMessage =

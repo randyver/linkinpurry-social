@@ -3,6 +3,8 @@ import { MoreHorizontal } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState, useEffect, useRef } from "react";
 import EditFeed from "./edit-feed";
+import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 interface FeedCardProps {
   profilePhoto: string;
@@ -26,7 +28,7 @@ export const FeedCard = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false); 
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -68,10 +70,10 @@ export const FeedCard = ({
 
       setIsDeleteModalOpen(false);
       setIsMenuOpen(false);
-      alert("Feed deleted successfully!");
+      toast.success("Feed deleted successfully");
     } catch (error) {
       console.error("Failed to delete feed:", error);
-      alert("Failed to delete feed");
+      toast.error("Failed to delete feed");
     } finally {
       setIsDeleting(false);
     }
@@ -85,17 +87,23 @@ export const FeedCard = ({
 
   return (
     <div>
-      <Card className="border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in-out">
-        <CardHeader className="flex items-center justify-between p-4 border-b border-gray-200">
-          <div className="flex items-center space-x-4">
+      <Card className="border border-gray-200 rounded-lg shadow-sm transition-shadow duration-200 ease-in-out">
+        <CardHeader className="flex flex-row justify-between p-4 border-b border-gray-200">
+          <div className="flex gap-x-6">
             <img
               src={profilePhoto}
               alt={`${fullname}'s profile`}
               className="w-12 h-12 rounded-full object-cover"
             />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">{fullname}</h3>
-              <p className="text-sm text-gray-500">{date}</p>
+              <div className="flex justify-start space-x-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {fullname}
+                  </h3>
+                  <p className="text-sm text-gray-500">{date}</p>
+                </div>
+              </div>
             </div>
           </div>
           {/* More options icon */}
@@ -109,16 +117,15 @@ export const FeedCard = ({
               <MoreHorizontal className="w-5 h-5" />
             </Button>
             {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
                 <ul className="text-sm text-gray-700">
                   {/* Show "View Profile" for everyone */}
                   <li>
-                    <Button
-                      onClick={() => {}}
-                      className="block px-4 py-2 text-left  w-full text-sm"
-                    >
+                    {/* redirect to profile/ownerFeedId */}
+                    <Link to={`/profile/${ownerFeedId}`}
+                      className="bg-white text-black rounded-none block px-4 py-2 text-left  w-full text-sm hover:bg-wbd-secondary cursor:pointer">
                       View Profile
-                    </Button>
+                    </Link>
                   </li>
 
                   {/* Show "Edit Feed" and "Delete Feed" only if it's the user's own feed */}
@@ -127,7 +134,7 @@ export const FeedCard = ({
                       <li>
                         <Button
                           onClick={handleEdit}
-                          className="block px-4 py-2 text-left  w-full text-sm"
+                          className="bg-white text-black rounded-none block px-4 py-2 text-left  w-full text-sm hover:bg-wbd-secondary cursor:pointer"
                         >
                           Edit Feed
                         </Button>
@@ -135,7 +142,7 @@ export const FeedCard = ({
                       <li>
                         <Button
                           onClick={() => setIsDeleteModalOpen(true)}
-                          className="block px-4 py-2 text-left text-red-600  w-full text-sm"
+                          className="bg-white rounded-none block px-4 py-2 text-left text-red-600  w-full text-sm hover:bg-wbd-secondary cursor:pointer"
                         >
                           Delete Feed
                         </Button>
@@ -156,7 +163,6 @@ export const FeedCard = ({
       {isEditModalOpen && (
         <EditFeed
           fullname={fullname}
-          userId={userId}
           feedId={feedId}
           initialContent={content}
           onClose={handleCloseEditModal}
@@ -167,7 +173,9 @@ export const FeedCard = ({
       {isDeleteModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-20">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-gray-800">Are you sure you want to delete this feed?</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Are you sure you want to delete this feed?
+            </h3>
             <div className="mt-4 flex justify-end space-x-4">
               <Button
                 variant="outline"

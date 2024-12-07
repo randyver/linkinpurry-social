@@ -85,7 +85,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-wbd-background text-wbd-text">
+    <div className="flex justify-center items-center min-h-screen bg-wbd-background text-wbd-text px-4 md:px-8 lg:py-16 mt-10">
       <Card className="max-w-md w-full bg-wbd-secondary shadow-md">
         <CardHeader className="text-center border-b border-wbd-highlight">
           <CardTitle className="text-wbd-primary text-2xl font-bold">

@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface AddFeedProps {
   fullname: string;
-  userId: number;
+  photo: string;
 }
 
-const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
+const AddFeed: React.FC<AddFeedProps> = ({ fullname, photo }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
   const maxLength = 280;
@@ -24,7 +25,6 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
           },
           body: JSON.stringify({
             content: postContent,
-            userId: userId,
           }),
         });
 
@@ -32,17 +32,16 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
           throw new Error("Failed to create feed");
         }
 
-        const data = await response.json();
-        console.log("Feed created:", data);
+        toast.success("Feed posted successfully");
 
         setPostContent("");
         setIsOpen(false);
       } catch (error) {
         console.error("Error posting feed:", error);
-        alert("Failed to create post");
+        toast.error("Failed to post feed");
       }
     } else {
-      alert("Please write something before posting.");
+      toast.error("Feed content cannot be empty");
     }
   };
 
@@ -52,11 +51,11 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
       : `${postContent.length}/${maxLength}`;
 
   return (
-    <div className="relative">
+    <div className="relative w-full h-16 flex items-center">
       {/* Trigger Button */}
       <Button
         onClick={() => setIsOpen(true)}
-        className="w-full flex justify-start items-center bg-gray-100 border rounded-full px-4 py-2 text-gray-600"
+        className="w-full flex justify-start items-center bg-white hover:bg-gray-100 border rounded-full px-4 py-2 text-black"
       >
         Start a post
       </Button>
@@ -76,7 +75,7 @@ const AddFeed: React.FC<AddFeedProps> = ({ fullname, userId }) => {
             {/* User Profile Info */}
             <div className="flex items-center mb-4">
               <img
-                src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
+                src={photo}
                 alt="Profile"
                 className="w-12 h-12 rounded-full mr-4"
               />

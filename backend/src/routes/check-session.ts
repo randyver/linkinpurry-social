@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
+import { profile } from "console";
 
 const prisma = new PrismaClient();
 const checkSessionRoute = new Hono();
@@ -18,6 +19,7 @@ checkSessionRoute.get("/check-session", async (c) => {
         username: true,
         name: true,
         email: true,
+        profilePhotoPath: true,
       },
     });
 
@@ -32,6 +34,7 @@ checkSessionRoute.get("/check-session", async (c) => {
         email: userData.email,
         username: userData.username,
         fullname: userData.name,
+        profilePhotoPath: userData.profilePhotoPath,
       },
     });
   } catch (error) {
