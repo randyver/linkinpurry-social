@@ -29,6 +29,8 @@ import { feedsRoute } from "./routes/feed.js";
 import { addFeedRoute } from "./routes/feed.js";
 import { editFeedRoute } from "./routes/feed.js";
 import { deleteFeedRoute } from "./routes/feed.js";
+import { savePushSubscription } from "./routes/save-push-subscription.js";
+import { notifyChatHandler } from "./routes/notify-chat.js";
 
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
@@ -53,6 +55,15 @@ app.use(
 
 // Base route
 app.get("/", (c) => c.text("Hello Hono!"));
+
+app.get('/api/vapid-key', (c) => {
+  const vapidKey = process.env.VAPID_PUBLIC_KEY!;
+  console.log("VAPID Key:", vapidKey);
+  if (!vapidKey) {
+    return c.json({ error: "VAPID key not set in the environment" }, 500);
+  }
+  return c.json({ vapidKey });
+});
 
 // Public Routes
 const publicRoutes = new Hono();
@@ -98,10 +109,12 @@ protectedRoutesValidateJWT.post("/api/feed", addFeedRoute);
 protectedRoutesValidateJWT.put("/api/feed/:feed_id", editFeedRoute);
 protectedRoutesValidateJWT.delete("/api/feed/:feed_id", deleteFeedRoute);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
+protectedRoutesValidateJWT.post("/api/save-push-subscription", savePushSubscription);
 protectedRoutesValidateJWT.get(
   "/api/chat/:userId/:oppositeUserId",
   getChatHistoryHandler
 );
+protectedRoutesValidateJWT.post("/api/notify-chat", notifyChatHandler);
 app.route("/", protectedRoutesValidateJWT);
 
 const protectedRouteProfileAccess = new Hono();

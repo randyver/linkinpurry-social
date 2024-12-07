@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { notifyConnections } from "./notify-connections.js";
 
 const prisma = new PrismaClient();
 
@@ -112,7 +113,13 @@ export const addFeedRoute = async (c: any) => {
       },
     });
 
-    return c.json({ content: newFeed.content }, 201);
+    console.log("Notifying connections about new feed:", newFeed.id.toString());
+    notifyConnections(BigInt(userId), newFeed.id.toString()).catch((err) => {
+      console.error("Failed to notify connections:", err);
+    });
+
+    return c.json({ id: newFeed.id.toString(), content: newFeed.content }, 201);
+
   } catch (error) {
     console.error(error);
     return c.json({ error: "Failed to create feed" }, 500);
