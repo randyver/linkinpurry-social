@@ -72,14 +72,14 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-wbd-background text-wbd-text">
-      <Card className="max-w-md w-full bg-wbd-secondary shadow-md">
+    <div className="flex justify-center items-center min-h-screen bg-wbd-background text-wbd-text px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-lg md:max-w-md bg-wbd-secondary shadow-lg">
         <CardHeader className="text-center border-b border-wbd-highlight">
-          <CardTitle className="text-wbd-primary text-2xl font-bold">
+          <CardTitle className="text-wbd-primary text-2xl md:text-3xl font-bold">
             Login
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-6 md:p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
@@ -122,13 +122,13 @@ export default function Login() {
               />
               <Button
                 type="submit"
-                className="w-full mt-8 bg-wbd-primary text-white hover:bg-wbd-tertiary"
+                className="w-full mt-8 bg-wbd-primary text-white hover:bg-wbd-tertiary transition-all duration-300"
               >
                 Login
               </Button>
 
               <div className="text-center mt-4">
-                <p className="text-wbd-tertiary">
+                <p className="text-wbd-tertiary text-sm md:text-base">
                   Don't have an account?{" "}
                   <Link
                     to="/register"
