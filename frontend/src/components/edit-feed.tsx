@@ -6,13 +6,12 @@ import { toast } from "react-hot-toast";
 
 interface EditFeedProps {
   fullname: string;
-  userId: number;
   feedId: number;
   initialContent: string;
   onClose: () => void;
 }
 
-const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialContent, onClose }) => {
+const EditFeed: React.FC<EditFeedProps> = ({ fullname, feedId, initialContent, onClose }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [postContent, setPostContent] = useState(initialContent);
   const maxLength = 280;
@@ -45,7 +44,6 @@ const EditFeed: React.FC<EditFeedProps> = ({ fullname, userId, feedId, initialCo
           },
           body: JSON.stringify({
             content: postContent,
-            userId: userId,
           }),
         });
 
