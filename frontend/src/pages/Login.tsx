@@ -38,6 +38,69 @@ export default function Login() {
     },
   });
 
+  const requestNotificationPermission = async () => {
+    console.log("Current Notification Permission:", Notification.permission);
+    if ("Notification" in window && Notification.permission !== "granted") {
+      console.log("Requesting notification permission");
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          console.error("Notification permission denied");
+        }
+      } catch (error) {
+        console.error("Failed to request notification permission:", error);
+      }
+    }
+  };
+
+  const getVapidKey = async (): Promise<string> => {
+    try {
+      const response = await fetch("http://localhost:3000/api/vapid-key");
+      if (!response.ok) {
+        throw new Error("Failed to fetch VAPID key");
+      }
+      const { vapidKey } = await response.json();
+      return vapidKey;
+    } catch (error) {
+      console.error("Error fetching VAPID key:", error);
+      throw error;
+    }
+  };
+  
+
+  const registerPushSubscription = async () => {
+    console.log("Registering push subscription");
+    if ("serviceWorker" in navigator) {
+      try {
+        const vapidKey = await getVapidKey();
+        const registration = await navigator.serviceWorker.ready;
+  
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: vapidKey,
+        });
+        
+        const response = await fetch("http://localhost:3000/api/save-push-subscription", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(subscription),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to save subscription on the server");
+        }
+  
+        console.log("Push subscription registered successfully");
+      } catch (error) {
+        console.error("Failed to register push subscription:", error);
+      }
+    }
+  };
+  
+  
   const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
     toast.loading("Logging in...");
     try {
@@ -49,27 +112,28 @@ export default function Login() {
         body: JSON.stringify(data),
         credentials: "include",
       });
-
+  
       const result = await response.json();
-
+  
       if (!response.ok) {
         toast.dismiss();
-        toast.error(
-          result.message || "Login failed. Please check your credentials.",
-        );
+        toast.error(result.message || "Login failed. Please check your credentials.");
         return;
       }
-
+  
       toast.dismiss();
       toast.success(`Welcome back!`);
+      await requestNotificationPermission();
+      if (Notification.permission === "granted") {
+        await registerPushSubscription();
+      }
       navigate("/");
     } catch (error) {
       toast.dismiss();
-      toast.error(
-        "An error occurred while logging in. Please try again later.",
-      );
+      toast.error("An error occurred while logging in. Please try again later.");
     }
   };
+  
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-wbd-background text-wbd-text">
