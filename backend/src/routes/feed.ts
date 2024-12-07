@@ -130,3 +130,45 @@ export const deleteFeedRoute = async (c: any) => {
     return c.json({ error: "Failed to delete feed" }, 500);
   }
 };
+
+export const detailFeedRoute = async (c: any) => {
+  try {
+    const feedId = BigInt(c.req.param("feed_id"));
+
+    const feed = await prisma.feed.findUnique({
+      where: { id: feedId },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            profilePhotoPath: true,
+          },
+        },
+      },
+    });
+
+    if (!feed) {
+      return c.json({ error: "Feed not found" }, 404);
+    }
+
+    return c.json({
+      id: feed.id.toString(),
+      content: feed.content,
+      createdAt: feed.createdAt,
+      user: {
+        id: feed.user.id.toString(),
+        username: feed.user.username,
+        name: feed.user.name,
+        profilePhotoPath: feed.user.profilePhotoPath,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to fetch feed details:", error);
+    return c.json({ error: "Failed to fetch feed details" }, 500);
+  }
+}

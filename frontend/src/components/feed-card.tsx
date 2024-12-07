@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import EditFeed from "./edit-feed";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface FeedCardProps {
   profilePhoto: string;
@@ -29,6 +30,7 @@ export const FeedCard = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -89,7 +91,7 @@ export const FeedCard = ({
     <div>
       <Card className="border border-gray-200 rounded-lg shadow-sm transition-shadow duration-200 ease-in-out">
         <CardHeader className="flex flex-row justify-between p-4 border-b border-gray-200">
-          <div className="flex gap-x-6">
+          <div className="flex gap-x-6 cursor-pointer" onClick={() => navigate(`/profile/${ownerFeedId}`)}>
             <img
               src={profilePhoto}
               alt={`${fullname}'s profile`}
@@ -119,12 +121,11 @@ export const FeedCard = ({
             {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-10">
                 <ul className="text-sm text-gray-700">
-                  {/* Show "View Profile" for everyone */}
+                  {/* show detail feed */}
                   <li>
-                    {/* redirect to profile/ownerFeedId */}
-                    <Link to={`/profile/${ownerFeedId}`}
+                    <Link to={`/feed/${feedId}`}
                       className="bg-white text-black rounded-none block px-4 py-2 text-left  w-full text-sm hover:bg-wbd-secondary cursor:pointer">
-                      View Profile
+                      View Detail Feed
                     </Link>
                   </li>
 

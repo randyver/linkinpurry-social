@@ -29,6 +29,7 @@ import { feedsRoute } from "./routes/feed.js";
 import { addFeedRoute } from "./routes/feed.js";
 import { editFeedRoute } from "./routes/feed.js";
 import { deleteFeedRoute } from "./routes/feed.js";
+import { detailFeedRoute } from "./routes/feed.js";
 
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
@@ -97,6 +98,7 @@ protectedRoutesValidateJWT.get("/api/feed", feedsRoute);
 protectedRoutesValidateJWT.post("/api/feed", addFeedRoute);
 protectedRoutesValidateJWT.put("/api/feed/:feed_id", editFeedRoute);
 protectedRoutesValidateJWT.delete("/api/feed/:feed_id", deleteFeedRoute);
+protectedRoutesValidateJWT.get("/api/feed/:feed_id", detailFeedRoute);
 protectedRoutesValidateJWT.route("/api", checkSessionRoute);
 protectedRoutesValidateJWT.get(
   "/api/chat/:userId/:oppositeUserId",
