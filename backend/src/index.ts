@@ -19,7 +19,7 @@ import {
   acceptOrRejectRequestHandler,
   deleteConnectionHandler,
 } from "./routes/connection.js";
-import { getProfileHandler, updateProfileHandler } from "./routes/profile.js";
+import { getProfileHandler, updateProfileHandler, getUserRecentPosts } from "./routes/profile.js";
 import { getSignedUrlHandler } from "./routes/get-url.js";
 import {
   feedsRoute,
@@ -79,6 +79,7 @@ app.route("/", publicRoutes);
 const protectedRouteProfileAccess = new Hono();
 protectedRouteProfileAccess.use("/api/profile/:user_id", profileAccessMiddleware);
 protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
+protectedRouteProfileAccess.get("/api/profile/:user_id/recent-posts", getUserRecentPosts);
 app.route("/", protectedRouteProfileAccess);
 
 const protectedRoutesValidateJWT = new Hono();

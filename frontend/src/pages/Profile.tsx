@@ -11,7 +11,15 @@ import {
 } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
-import { Pencil, Eye, EyeOff, X, Plus, UserRoundPlus } from "lucide-react";
+import {
+  Pencil,
+  Eye,
+  EyeOff,
+  X,
+  Plus,
+  UserRoundPlus,
+  UserRoundMinus,
+} from "lucide-react";
 
 type ProfileData = {
   username: string;
@@ -20,7 +28,7 @@ type ProfileData = {
   connection_count: number;
   work_history?: string;
   skills?: string;
-  relevant_posts?: { id: string; content: string; created_at: string }[];
+  relevant_posts?: { id: string; content: string; createdAt: string }[];
   new_password?: string;
   confirm_password?: string;
   current_password?: string;
@@ -53,6 +61,7 @@ export default function Profile() {
     useState(false);
   const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
 
   if (!userId) {
     toast.error("User ID is required to view the profile.");
@@ -67,12 +76,12 @@ export default function Profile() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch logged-in user");
+        setLoggedInUserId(null);
+      } else {
+        const userData = await response.json();
+        setLoggedInUserId(userData.user.userId);
+        console.log("Logged in user ID:", userData.user.userId);
       }
-
-      const userData = await response.json();
-      setLoggedInUserId(userData.user.userId);
-      console.log("Logged in user ID:", userData.user.userId);
     } catch (error) {
       toast.error("Error fetching logged-in user");
     }
@@ -113,8 +122,33 @@ export default function Profile() {
           setPhotoUrl(data.body.profile_photo);
         }
 
+        console.log("data.body:", data.body);
         console.log("Is connected:", data.body.is_connected);
         setIsConnected(data.body.is_connected);
+        setHasPendingRequest(data.body.has_pending_request);
+
+        if (loggedInUserId) {
+          const postsResponse = await fetch(
+            `http://localhost:3000/api/profile/${userId}/recent-posts`,
+            {
+              method: "GET",
+              credentials: "include",
+            },
+          );
+
+          if (postsResponse.ok) {
+            console.log("Fetching relevant posts...");
+            const postsData = await postsResponse.json();
+            console.log("Posts data:", postsData);
+            setProfile((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                relevant_posts: postsData.body || [],
+              };
+            });
+          }
+        }
       }
     } catch (error) {
       console.error(error);
@@ -189,11 +223,9 @@ export default function Profile() {
   useEffect(() => {
     fetchLoggedInUser();
   }, []);
-  
+
   useEffect(() => {
-    if (loggedInUserId) {
-      fetchProfile();
-    }
+    fetchProfile();
   }, [loggedInUserId, userId]);
 
   const sortWorkHistory = (
@@ -202,6 +234,7 @@ export default function Profile() {
       company: string;
       start_date: string;
       end_date: string;
+      duration: string;
     }[],
   ) => {
     return workHistory.sort((a, b) => {
@@ -229,11 +262,48 @@ export default function Profile() {
       });
   };
 
+  const calculateDuration = (start: Date, end: Date | null = null) => {
+    const validEnd = end && !isNaN(end.getTime()) ? end : new Date();
+
+    let years = validEnd.getFullYear() - start.getFullYear();
+    let months = validEnd.getMonth() - start.getMonth();
+    let days = validEnd.getDate() - start.getDate();
+
+    if (days < 0) {
+      months -= 1;
+      days += new Date(
+        validEnd.getFullYear(),
+        validEnd.getMonth(),
+        0,
+      ).getDate();
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    return (
+      `${years > 0 ? `${years} year${years > 1 ? "s" : ""} ` : ""}${
+        months > 0 ? `${months} month${months > 1 ? "s" : ""}` : ""
+      }`.trim() || "Less than a month"
+    );
+  };
+
   const parseWorkHistoryForDisplay = (workHistory: string) => {
-    const parsed = parseWorkHistory(workHistory).map((job) => ({
-      ...job,
-      end_date: job.end_date && job.end_date.trim() ? job.end_date : "Present",
-    }));
+    const parsed = parseWorkHistory(workHistory).map((job) => {
+      const endDate =
+        job.end_date && job.end_date.trim() ? job.end_date : "Present";
+      const startDate = new Date(job.start_date);
+      const calculatedEndDate =
+        endDate === "Present" ? new Date() : new Date(endDate);
+
+      return {
+        ...job,
+        end_date: endDate,
+        duration: calculateDuration(startDate, calculatedEndDate),
+      };
+    });
     return sortWorkHistory(parsed);
   };
 
@@ -264,14 +334,16 @@ export default function Profile() {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({ userId }),
-        }
+          body: JSON.stringify({ requestToId: userId }),
+        },
       );
-  
+
+      console.log("Connection request response:", response);
+
       if (!response.ok) {
         throw new Error("Failed to send connection request");
       }
-  
+
       toast.success("Connection request sent successfully");
     } catch (error) {
       console.error(error);
@@ -279,7 +351,34 @@ export default function Profile() {
     } finally {
       toast.dismiss(toastId);
     }
-  };  
+  };
+
+  const disconnect = async (userId: string) => {
+    const toastId = toast.loading("Disconnecting...");
+    try {
+      const response = await fetch("http://localhost:3000/api/connections", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ connectionToId: userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to disconnect");
+      }
+
+      toast.success("Disconnected successfully");
+      setIsConnected(false);
+      fetchProfile();
+    } catch (error) {
+      console.error(error);
+      toast.error("Error disconnecting");
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-wbd-background pt-32 p-6">
@@ -522,20 +621,42 @@ export default function Profile() {
                     {profile.name}
                   </h1>
                   <p className="text-med text-wbd-text">@{profile.username}</p>
-                  <p className="mt-2 text-sm text-wbd-primary cursor-pointer hover:underline" onClick={() => navigate(`/connections/user/${userId}`)}>
+                  <p
+                    className="mt-2 text-sm text-wbd-primary cursor-pointer hover:underline"
+                    onClick={() => navigate(`/connections/user/${userId}`)}
+                  >
                     {profile.connection_count} connections
                   </p>
-                  {!isConnected && !isEditing && userId !== loggedInUserId && (
-                    <Button
-                      className="mt-4 text-md"
-                      variant="secondary"
-                      onClick={() => sendRequest(userId)}
-                      disabled={userId === loggedInUserId}
-                    >
-                      <UserRoundPlus className="mr-1" />
-                      Connect
-                    </Button>
-                  )}
+                  {loggedInUserId &&
+                    isConnected &&
+                    !hasPendingRequest &&
+                    !isEditing &&
+                    userId !== loggedInUserId && (
+                      <Button
+                        className="mt-4 text-md"
+                        variant="destructive"
+                        onClick={() => disconnect(userId)}
+                        disabled={userId === loggedInUserId}
+                      >
+                        <UserRoundMinus className="mr-1" />
+                        Disconnect
+                      </Button>
+                    )}
+                  {loggedInUserId &&
+                    !isConnected &&
+                    !hasPendingRequest &&
+                    !isEditing &&
+                    userId !== loggedInUserId && (
+                      <Button
+                        className="mt-4 text-md"
+                        variant="secondary"
+                        onClick={() => sendRequest(userId)}
+                        disabled={userId === loggedInUserId}
+                      >
+                        <UserRoundPlus className="mr-1" />
+                        Connect
+                      </Button>
+                    )}
                 </>
               )}
             </CardContent>
@@ -724,7 +845,7 @@ export default function Profile() {
                         </h3>
                         <p className="text-wbd-text">{job.company}</p>
                         <p className="text-sm text-gray-500">
-                          {job.start_date} - {job.end_date}
+                          {job.start_date} - {job.end_date} • {job.duration}
                         </p>
                       </div>
                     ),
@@ -818,23 +939,46 @@ export default function Profile() {
             </CardContent>
           </Card>
 
-          {!isEditing && (
+          {loggedInUserId && !isEditing && (
             <Card className="w-full max-w-3xl bg-white shadow-md rounded-lg mt-6">
               <CardHeader>
                 <CardTitle className="text-wbd-text">Relevant Posts</CardTitle>
               </CardHeader>
               <CardContent>
                 {profile.relevant_posts && profile.relevant_posts.length > 0 ? (
-                  <ul className="list-disc list-inside">
+                  <div className="flex flex-col gap-4">
                     {profile.relevant_posts.map((post) => (
-                      <li key={post.id}>
-                        {post.content} (Posted on{" "}
-                        {new Date(post.created_at).toLocaleDateString()})
-                      </li>
+                      <div
+                        key={post.id}
+                        className="border rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                        onClick={() => navigate(`/feed/${post.id}`)}
+                      >
+                        <p className="text-wbd-text mb-2">{post.content}</p>
+                        <p className="text-sm text-gray-500">
+                          Posted on{" "}
+                          {new Date(post.createdAt).toLocaleDateString(
+                            undefined,
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}{" "}
+                          at{" "}
+                          {new Date(post.createdAt).toLocaleTimeString(
+                            undefined,
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            },
+                          )}
+                        </p>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 ) : (
-                  <p>No relevant posts.</p>
+                  <p className="text-gray-500">No relevant posts.</p>
                 )}
               </CardContent>
             </Card>

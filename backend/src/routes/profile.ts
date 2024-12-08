@@ -23,13 +23,10 @@ export const getProfileHandler = async (c: Context) => {
     const userIdParam = c.req.param("user_id");
     const targetUserId = parseInt(userIdParam, 10);
     const loggedInUserIdParam = c.req.query("logged_in_user_id");
-    const loggedInUserId = loggedInUserIdParam
-      ? parseInt(loggedInUserIdParam, 10)
-      : -1;
-
-    // if (isNaN(targetUserId) || !loggedInUserId || (loggedInUserId && isNaN(loggedInUserId))) {
-    //   return c.json({ success: false, message: "Invalid user ID" }, 400);
-    // }
+    const loggedInUserId =
+      loggedInUserIdParam && !isNaN(parseInt(loggedInUserIdParam, 10))
+        ? parseInt(loggedInUserIdParam, 10)
+        : -1;
 
     const access = c.get("access");
     let userFields: any = {
@@ -58,14 +55,32 @@ export const getProfileHandler = async (c: Context) => {
       return c.json({ success: false, message: "User not found" }, 404);
     }
 
-    const connection = await prisma.connection.findUnique({
-      where: {
-        fromId_toId: {
-          fromId: BigInt(loggedInUserId),
-          toId: BigInt(targetUserId),
+    let isConnected = false;
+    let hasPendingRequest = false;
+
+    if (loggedInUserId !== -1) {
+      const connection = await prisma.connection.findUnique({
+        where: {
+          fromId_toId: {
+            fromId: BigInt(loggedInUserId),
+            toId: BigInt(targetUserId),
+          },
         },
-      },
-    });
+      });
+      isConnected = !!connection;
+
+      if (!isConnected) {
+        const connectionRequest = await prisma.connectionRequest.findUnique({
+          where: {
+            fromId_toId: {
+              fromId: BigInt(loggedInUserId),
+              toId: BigInt(targetUserId),
+            },
+          },
+        });
+        hasPendingRequest = !!connectionRequest;
+      }
+    }
 
     const responseBody: any = {
       username: targetUser.username,
@@ -74,7 +89,8 @@ export const getProfileHandler = async (c: Context) => {
       connection_count: targetUser._count.sentConnections || 0,
       work_history: targetUser.workHistory,
       skills: targetUser.skills,
-      is_connected: !!connection,
+      is_connected: isConnected,
+      has_pending_request: hasPendingRequest,
     };
 
     if (access >= 2) {
@@ -180,7 +196,7 @@ export const updateProfileHandler = async (c: Context) => {
           Key: fileKey,
           Body: fileBuffer,
           ContentType: profilePhoto.type,
-          CacheControl: "no-cache"
+          CacheControl: "no-cache",
         })
       );
 
@@ -207,5 +223,58 @@ export const updateProfileHandler = async (c: Context) => {
   } catch (error) {
     console.error("Error updating profile:", error);
     return c.json({ success: false, message: "Failed to update profile" }, 500);
+  }
+};
+
+export const getUserRecentPosts = async (c: any) => {
+  try {
+    const userId = BigInt(c.req.param("user_id"));
+
+    if (!userId) {
+      return c.json(
+        {
+          success: false,
+          message: "User ID is required",
+          body: null,
+        },
+        400
+      );
+    }
+
+    const limit = 3;
+
+    const recentPosts = await prisma.feed.findMany({
+      where: {
+        userId,
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+      },
+    });
+
+    const serializedPosts = recentPosts.map((post) => ({
+      ...post,
+      id: post.id.toString(),
+    }));
+
+    return c.json({
+      success: true,
+      message: "Recent posts fetched successfully",
+      body: serializedPosts,
+    });
+  } catch (error) {
+    console.error("Error fetching user recent posts:", error);
+    return c.json(
+      {
+        success: false,
+        message: "Failed to fetch user recent posts",
+        body: null,
+      },
+      500
+    );
   }
 };
