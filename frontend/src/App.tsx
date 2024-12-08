@@ -31,7 +31,13 @@ function Layout() {
     "/connections/user/:userId",
   ];
 
+  const noFooterPaths = ["/messages", "/messages/:oppositeUser"];
+
   const isStickyFooter = stickyFooterPaths.some((path) =>
+    matchPath(path, location.pathname)
+  );
+
+  const isNoFooter = noFooterPaths.some((path) =>
     matchPath(path, location.pathname)
   );
 
@@ -54,7 +60,7 @@ function Layout() {
         <Route path="/messages/:oppositeUser" element={<Messages />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {isStickyFooter ? <StickyFooter /> : <Footer />}
+      {!isNoFooter && (isStickyFooter ? <StickyFooter /> : <Footer />)}
     </>
   );
 }

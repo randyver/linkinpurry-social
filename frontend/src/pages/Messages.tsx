@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { format } from "date-fns";
+import { ArrowLeft } from "lucide-react";
+import { MessageCircleMore } from 'lucide-react';
 
 interface ConnectedUser {
   toId: string;
@@ -23,9 +24,6 @@ const socket = io("http://localhost:3000", {
 });
 
 function Messages() {
-  const navigate = useNavigate();
-  const { oppositeUser } = useParams();
-
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -33,13 +31,14 @@ function Messages() {
   const [selectedUser, setSelectedUser] = useState<ConnectedUser | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const response = await fetch("http://localhost:3000/api/check-session", {
         credentials: "include",
       });
       const data = await response.json();
-      console.log("Current user response:", data);
       if (data.success) {
         setCurrentUser(data.user.userId);
       }
@@ -47,38 +46,6 @@ function Messages() {
 
     fetchCurrentUser();
   }, []);
-
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      if (oppositeUser) {
-        // Fetch user details or chat history for the selected user
-        const user = connectedUsers.find((u) => u.toId === oppositeUser);
-        if (user) {
-          setSelectedUser(user);
-
-          if (!currentUser) return;
-
-          // Fetch chat history
-          const response = await fetch(
-            `http://localhost:3000/api/chat/${currentUser}/${user.toId}`,
-            {
-              credentials: "include",
-            },
-          );
-          const data = await response.json();
-          console.log(data);
-          if (data.success) {
-            setChatHistory(data.data);
-          }
-
-          // Join the room for real-time messaging
-          socket.emit("joinRoom", currentUser);
-        }
-      }
-    };
-
-    fetchChatHistory();
-  }, [oppositeUser, connectedUsers, currentUser]);
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -91,7 +58,6 @@ function Messages() {
         },
       );
       const data = await response.json();
-      console.log("Connections response:", data);
       if (data.success) {
         setConnectedUsers(data.data);
       }
@@ -101,9 +67,31 @@ function Messages() {
   }, [currentUser]);
 
   useEffect(() => {
+    if (selectedUser) {
+      const fetchChatHistory = async () => {
+        if (!currentUser) return;
+
+        const response = await fetch(
+          `http://localhost:3000/api/chat/${currentUser}/${selectedUser.toId}`,
+          {
+            credentials: "include",
+          },
+        );
+        const data = await response.json();
+        if (data.success) {
+          setChatHistory(data.data);
+        }
+
+        socket.emit("joinRoom", currentUser);
+      };
+
+      fetchChatHistory();
+    }
+  }, [selectedUser, currentUser]);
+
+  useEffect(() => {
     socket.on("receiveMessage", (data) => {
       if (selectedUser && selectedUser.toId === data.senderId) {
-        console.log("Received message:", data);
         setChatHistory((prev) => [...prev, data]);
       }
     });
@@ -114,7 +102,8 @@ function Messages() {
   }, [selectedUser]);
 
   const selectChat = useCallback((user: ConnectedUser) => {
-    navigate(`/messages/${user.toId}`);
+    setIsChatOpen(true);
+    setSelectedUser(user);
   }, []);
 
   const sendMessage = async () => {
@@ -126,8 +115,6 @@ function Messages() {
       message: newMessage,
       timestamp: new Date().toISOString(),
     };
-
-    console.log("Sending message:", messageData);
 
     socket.emit("sendMessage", messageData);
 
@@ -164,11 +151,22 @@ function Messages() {
     }
   }, [chatHistory]);
 
+  // Function to go back to the connected user list
+  const goBack = () => {
+    setIsChatOpen(false);
+    setSelectedUser(null);
+  };
+
   return (
     <div className="bg-wbd-background h-screen flex items-center justify-center">
-      <div className="flex min-h-[600px] w-3/5 bg-wbd-background mt-16">
-        <div className="w-1/3 bg-wbd-secondary p-6 border-r-4 border-wbd-background rounded-lg">
-          <h2 className="text-2xl font-semibold text-wbd-text mb-6">
+      <div className="flex min-h-[600px] w-3/5 bg-wbd-background mt-16 fixed">
+        {/* connected user section */}
+        <div
+          className={`w-full md:w-1/3 bg-wbd-secondary p-6 border-r-4 border-wbd-background rounded-lg ${
+            isChatOpen ? "hidden md:block" : "block"
+          }`}
+        >
+          <h2 className="text-xl xl:text-2xl font-semibold text-wbd-text mb-6">
             Connected Users
           </h2>
           <ul className="space-y-4">
@@ -193,9 +191,26 @@ function Messages() {
           </ul>
         </div>
 
-        <div className="w-full p-6 bg-wbd-secondary rounded-md">
-          {selectedUser ? (
+        {/* chat section */}
+        <div
+          className={`w-full p-6 bg-wbd-secondary rounded-md ${isChatOpen ? "block" : "hidden"} md:block`}
+        >
+          {!selectedUser ? (
+            <div className="flex flex-col mt-40">
+              <p className="text-center text-wbd-text text-xl xl:text-2xl xl:mx-24 font-semibold">Connect with users to start chatting. Select a user from the list to begin!</p>
+              <MessageCircleMore size={100} className="mx-auto mt-8 text-wbd-text" />
+            </div>
+          ) : (
             <>
+              {/* Tombol back */}
+              <button
+                onClick={goBack}
+                className="text-wbd-text flex items-center mb-4 p-2 rounded-lg hover:scale-105 transition-transform"
+              >
+                <ArrowLeft size={20} className="mr-2" />
+                Back
+              </button>
+
               <h2 className="text-2xl font-semibold text-wbd-text mb-4">
                 Chat with {selectedUser.username}
               </h2>
@@ -247,17 +262,12 @@ function Messages() {
                 />
                 <button
                   onClick={sendMessage}
-                  className="bg-wbd-tertiary text-white p-3 rounded-lg hover:ring-wbd-tertiary transition"
+                  className="bg-wbd-tertiary text-white p-3 rounded-lg"
                 >
                   Send
                 </button>
               </div>
             </>
-          ) : (
-            <p className="text-wbd-text text-xl font-medium text-center mt-12">
-              Connect with users to start chatting. Select a user from the list
-              to begin!
-            </p>
           )}
         </div>
       </div>
