@@ -72,14 +72,15 @@ export default function Users() {
 
   useEffect(() => {
     const fetchUsers = async (page: number) => {
-      if (!currentUser?.id || fetchedPages.current.has(page)) return;
-
+      if (fetchedPages.current.has(page)) return;
+  
       setLoading(true);
       fetchedPages.current.add(page);
-
+  
       try {
+        const excludedId = currentUser ? currentUser.id : undefined;
         const response = await fetch(
-          `http://localhost:3000/api/users?page=${page}&limit=15&excludedId=${currentUser.id}`,
+          `http://localhost:3000/api/users?page=${page}&limit=15&excludedId=${excludedId || ""}`,
         );
 
         const data = await response.json();
@@ -101,7 +102,7 @@ export default function Users() {
       }
     };
 
-    if (!isSessionLoading && currentUser) {
+    if (!isSessionLoading) {
       fetchUsers(page);
     }
   }, [page, isSessionLoading, currentUser]);
@@ -128,8 +129,8 @@ export default function Users() {
     const result = fuse.search(searchQuery);
 
     const sortedResults = result
-    .map((res: any) => res.item)
-    .sort((a, b) => (a.score || 0) - (b.score || 0));
+      .map((res: any) => res.item)
+      .sort((a, b) => (a.score || 0) - (b.score || 0));
 
     setFilteredUsers(sortedResults);
   }, [searchQuery, fuse, users]);
@@ -268,6 +269,7 @@ export default function Users() {
                 </div>
                 <div className="flex justify-end mt-6">
                   {isLoggedIn &&
+                    currentUser &&
                     !user.isConnected &&
                     !user.hasPendingRequest && (
                       <Button

@@ -14,6 +14,7 @@ import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 import DetailFeed from "./pages/DetailFeed";
 import Landing from "./pages/Landing";
+import About from "./pages/About";
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function Layout() {
         <Route path="/not-found" element={<NotFound />} />
         <Route path="/feed/:feedId" element={<DetailFeed />} />
         <Route path="/messages/:oppositeUser" element={<Messages />} />
+        <Route path="/about" element={<About />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!isNoFooter && (isStickyFooter ? <StickyFooter /> : <Footer />)}
