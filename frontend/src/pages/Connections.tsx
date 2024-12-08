@@ -101,9 +101,11 @@ export default function Connections() {
     if (connections.length > 0) {
       const options = {
         keys: ["username", "name"],
-        threshold: 0.4,
-        distance: 100,
-        minMatchCharLength: 2,
+        threshold: 0.3,
+        distance: 50,
+        minMatchCharLength: 1,
+        ignoreLocation: true,
+        includeScore: true,
       };
       setFuse(new Fuse(connections, options));
     }
@@ -115,7 +117,12 @@ export default function Connections() {
       return;
     }
     const result = fuse.search(searchQuery);
-    setFilteredConnections(result.map((res: any) => res.item));
+
+    const sortedResults = result
+      .map((res: any) => res.item)
+      .sort((a, b) => (a.score || 0) - (b.score || 0));
+
+    setFilteredConnections(sortedResults);
   }, [searchQuery, fuse, connections]);
 
   useEffect(() => {
