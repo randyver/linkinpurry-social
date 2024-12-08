@@ -3,7 +3,7 @@ self.addEventListener("push", (event) => {
 
   self.registration.showNotification(data.notification.title, {
     body: data.notification.message,
-    icon: "./public/logo-icon.svg",
+    icon: "./logo-icon.svg",
     data: { url: data.notification.data.url },
   });
 });

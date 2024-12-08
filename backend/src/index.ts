@@ -71,7 +71,6 @@ app.get("/api/vapid-key", (c) => {
 const publicRoutes = new Hono();
 publicRoutes.route("/api", registerRoute);
 publicRoutes.route("/api", loginRoute);
-publicRoutes.route("/api", logoutRoute);
 publicRoutes.route("/api", userSearchRoute);
 publicRoutes.route("/api", userRoute);
 publicRoutes.route("/api", usersRoute);
@@ -94,6 +93,7 @@ app.route("/", protectedRouteProfileAccess);
 
 const protectedRoutesValidateJWT = new Hono();
 protectedRoutesValidateJWT.use("/api/*", validateJWT);
+protectedRoutesValidateJWT.route("/api", logoutRoute);
 protectedRoutesValidateJWT.post(
   "/api/connections/request",
   sendConnectionRequestHandler

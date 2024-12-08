@@ -10,25 +10,32 @@ export const savePushSubscription = async (c: any) => {
     if (!user || !endpoint || !keys) {
       return c.json({ error: "Invalid subscription data" }, 400);
     }
-
     const existingSubscription = await prisma.pushSubscription.findUnique({
       where: { endpoint },
     });
 
     if (existingSubscription) {
-      return c.json({ message: "Subscription already exists" });
+      await prisma.pushSubscription.update({
+        where: { endpoint },
+        data: {
+          userId: BigInt(user.userId),
+          keys,
+        },
+      });
+
+      return c.json({ message: "Subscription updated successfully" });
+    } else {
+      await prisma.pushSubscription.create({
+        data: {
+          endpoint,
+          keys,
+          userId: BigInt(user.userId),
+        },
+      });
+
+      return c.json({ message: "Subscription saved successfully" });
     }
-
-    await prisma.pushSubscription.create({
-      data: {
-        endpoint,
-        keys,
-        userId: BigInt(user.userId),
-      },
-    });
-
-    return c.json({ message: "Subscription saved successfully" });
   } catch (error) {
-    return c.json({ error: "Failed to save subscription" }, 500);
+    return c.json({ error: "Failed to save or update subscription" }, 500);
   }
 };

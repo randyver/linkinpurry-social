@@ -1,14 +1,44 @@
-import { Hono } from 'hono';
+import { Hono } from "hono";
+import { PrismaClient } from "@prisma/client";
+import { setCookie } from "hono/cookie";
+
+const prisma = new PrismaClient();
 
 const logoutRoute = new Hono();
 
-logoutRoute.post('/logout', (c) => {
-  c.header('Set-Cookie', 'token=; HttpOnly; Max-Age=0; SameSite=Strict; Path=/; Secure;');
+logoutRoute.post("/logout", async (c) => {
+  try {
+    const user = c.get("user");
 
-  return c.json({
-    success: true,
-    message: 'Logout successful',
-  });
+    if (!user) {
+      return c.json({ success: false, message: "User not logged in" }, 400);
+    }
+
+    await prisma.pushSubscription.updateMany({
+      where: {
+        userId: BigInt(user.userId),
+      },
+      data: {
+        userId: null,
+      },
+    });
+
+    setCookie(c, "token", "", {
+      httpOnly: true,
+      maxAge: 0,
+      sameSite: "Strict",
+      path: "/",
+      secure: true,
+    });
+
+    return c.json({
+      success: true,
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    return c.json({ success: false, message: "Logout failed" }, 500);
+  }
 });
 
 export default logoutRoute;
