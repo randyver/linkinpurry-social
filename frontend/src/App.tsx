@@ -29,6 +29,7 @@ function Layout() {
   const stickyFooterPaths = [
     "/userlist",
     "/connections/user/:userId",
+    "/home",
   ];
 
   const noFooterPaths = ["/messages", "/messages/:oppositeUser"];

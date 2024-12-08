@@ -21,10 +21,10 @@ function Footer() {
             </div>
             <div className="flex flex-col items-center sm:items-start">
               <h3 className="font-bold">Directories</h3>
-              <Link to="" className="hover:underline">
+              <Link to="/home" className="hover:underline">
                 Feeds
               </Link>
-              <Link to="" className="hover:underline">
+              <Link to="/userlist" className="hover:underline">
                 Explore People
               </Link>
             </div>
