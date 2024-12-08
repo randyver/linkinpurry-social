@@ -47,7 +47,7 @@ export default function About() {
         <DynamicBackground />
       </div>
 
-      <section className="flex flex-col items-left justify-center min-h-screen px-80 text-left relative">
+      <section className="flex flex-col items-left justify-center min-h-screen px-4 sm:px-8 md:px-16 lg:px-32 xl:px-80 text-left relative">
         <h1 className="text-5xl text-wbd-primary font-bold mb-6 leading-tight">
           <span className="block">Linkinpurry</span>
           <span className="text-wbd-highlight text-4xl">
@@ -75,19 +75,35 @@ export default function About() {
 
       <section className="relative py-20">
         <div className="relative w-full h-[800px] lg:h-[900px] flex flex-col items-center justify-center">
-          <h2 className="absolute text-5xl text-wbd-primary font-bold text-center mb-6">
+          <h2 className="absolute text-5xl text-wbd-primary font-bold text-center mb-6 hidden lg:block">
             Meet Our Team
           </h2>
 
           <div className="relative w-full h-full">
-            <div className="absolute top-0 right-[30%] transform -translate-x-1/2 scroll-animate">
+            <div className="absolute top-0 right-[30%] transform -translate-x-1/2 scroll-animate hidden lg:block">
               <TeamMember member={teamMembers[2]} />
             </div>
-            <div className="absolute bottom-[35%] left-[20%] transform scroll-animate">
+            <div className="absolute bottom-[35%] left-[20%] transform scroll-animate hidden lg:block">
               <TeamMember member={teamMembers[1]} />
             </div>
-            <div className="absolute bottom-[1%] right-[25%] transform scroll-animate">
+            <div className="absolute bottom-[1%] right-[25%] transform scroll-animate hidden lg:block">
               <TeamMember member={teamMembers[0]} />
+            </div>
+
+            <h2 className="text-3xl text-wbd-primary font-bold text-center mb-6 lg:hidden">
+              Meet Our Team
+            </h2>
+
+            <div className="flex flex-col items-center space-y-6 lg:hidden">
+              <div className="scroll-animate">
+                <TeamMember member={teamMembers[0]} />
+              </div>
+              <div className="scroll-animate">
+                <TeamMember member={teamMembers[1]} />
+              </div>
+              <div className="scroll-animate">
+                <TeamMember member={teamMembers[2]} />
+              </div>
             </div>
           </div>
         </div>
