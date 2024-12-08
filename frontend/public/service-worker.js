@@ -1,14 +1,15 @@
 self.addEventListener("push", (event) => {
   const data = event.data.json();
-  self.registration.showNotification(data.title, {
-    body: data.message,
-    icon: "./src/assets/logo-icon.svg",
+
+  self.registration.showNotification(data.notification.title, {
+    body: data.notification.message,
+    icon: "./public/logo-icon.svg",
+    data: { url: data.notification.data.url },
   });
 });
 
 self.addEventListener("notificationclick", (event) => {
+  const { url } = event.notification.data;
   event.notification.close();
-  event.waitUntil(
-    clients.openWindow(data.url)
-  );
+  event.waitUntil(clients.openWindow(url));
 });

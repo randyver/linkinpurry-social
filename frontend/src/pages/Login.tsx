@@ -79,6 +79,8 @@ export default function Login() {
           userVisibleOnly: true,
           applicationServerKey: vapidKey,
         });
+
+        console.log(subscription);
         
         const response = await fetch("http://localhost:3000/api/save-push-subscription", {
           method: "POST",

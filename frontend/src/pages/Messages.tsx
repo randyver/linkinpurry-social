@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { format } from "date-fns";
 import { Button } from "../components/ui/button";
@@ -24,6 +25,8 @@ const socket = io("http://localhost:3000", {
 });
 
 function Messages() {
+  const navigate = useNavigate();
+  const { oppositeUser } = useParams();
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -46,6 +49,34 @@ function Messages() {
 
     fetchCurrentUser();
   }, []);
+  
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      if (oppositeUser) {
+        // Fetch user details or chat history for the selected user
+        const user = connectedUsers.find((u) => u.toId === oppositeUser);
+        if (user) {
+          setSelectedUser(user);
+          if (!currentUser) return;
+          // Fetch chat history
+          const response = await fetch(
+            `http://localhost:3000/api/chat/${currentUser}/${user.toId}`,
+            {
+              credentials: "include",
+            },
+          );
+          const data = await response.json();
+          console.log(data);
+          if (data.success) {
+            setChatHistory(data.data);
+          }
+          // Join the room for real-time messaging
+          socket.emit("joinRoom", currentUser);
+        }
+      }
+    };
+    fetchChatHistory();
+  }, [oppositeUser, connectedUsers, currentUser]);
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -58,6 +89,7 @@ function Messages() {
         },
       );
       const data = await response.json();
+      console.log("Connections response:", data);
       if (data.success) {
         setConnectedUsers(data.data);
       }
@@ -65,29 +97,6 @@ function Messages() {
 
     fetchConnections();
   }, [currentUser]);
-
-  useEffect(() => {
-    if (selectedUser) {
-      const fetchChatHistory = async () => {
-        if (!currentUser) return;
-
-        const response = await fetch(
-          `http://localhost:3000/api/chat/${currentUser}/${selectedUser.toId}`,
-          {
-            credentials: "include",
-          },
-        );
-        const data = await response.json();
-        if (data.success) {
-          setChatHistory(data.data);
-        }
-
-        socket.emit("joinRoom", currentUser);
-      };
-
-      fetchChatHistory();
-    }
-  }, [selectedUser, currentUser]);
 
   useEffect(() => {
     socket.on("receiveMessage", (data) => {
@@ -104,6 +113,7 @@ function Messages() {
   const selectChat = useCallback((user: ConnectedUser) => {
     setIsChatOpen(true);
     setSelectedUser(user);
+    navigate(`/messages/${user.toId}`);
   }, []);
 
   const sendMessage = async () => {
@@ -128,14 +138,15 @@ function Messages() {
     setChatHistory((prev) => [...prev, newChatMessage]);
     setNewMessage("");
 
-    await fetch("http://localhost:3000/api/notify-chat", {
+    await fetch("http://localhost:3000/api/send-push-notification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
-        senderId: currentUser,
-        receiverId: selectedUser.toId,
+        userId: selectedUser.toId,
+        notificationType: "message",
         message: newMessage,
+        url: `http://localhost:5173/messages/${currentUser}`,
       }),
     }).catch((err) => console.error("Failed to notify chat:", err));
   };

@@ -10,6 +10,7 @@ import userSearchRoute from "./routes/user-search.js";
 import checkSessionRoute from "./routes/check-session.js";
 import userRoute from "./routes/user.js";
 import usersRoute from "./routes/users.js";
+import notificationRoute from "./routes/send-push-notification.js";
 
 //Import handlers
 import {
@@ -19,7 +20,11 @@ import {
   acceptOrRejectRequestHandler,
   deleteConnectionHandler,
 } from "./routes/connection.js";
-import { getProfileHandler, updateProfileHandler, getUserRecentPosts } from "./routes/profile.js";
+import {
+  getProfileHandler,
+  updateProfileHandler,
+  getUserRecentPosts,
+} from "./routes/profile.js";
 import { getSignedUrlHandler } from "./routes/get-url.js";
 import {
   feedsRoute,
@@ -30,7 +35,6 @@ import {
 } from "./routes/feed.js";
 import { savePushSubscription } from "./routes/save-push-subscription.js";
 import { getChatHistoryHandler } from "./routes/messages.js";
-import { notifyChatHandler } from "./routes/notify-chat.js";
 
 // Import middlewares
 import { validateJWT } from "./middleware/validateJWT.js";
@@ -77,9 +81,15 @@ app.route("/", publicRoutes);
 
 // Protected Routes
 const protectedRouteProfileAccess = new Hono();
-protectedRouteProfileAccess.use("/api/profile/:user_id", profileAccessMiddleware);
+protectedRouteProfileAccess.use(
+  "/api/profile/:user_id",
+  profileAccessMiddleware
+);
 protectedRouteProfileAccess.get("/api/profile/:user_id", getProfileHandler);
-protectedRouteProfileAccess.get("/api/profile/:user_id/recent-posts", getUserRecentPosts);
+protectedRouteProfileAccess.get(
+  "/api/profile/:user_id/recent-posts",
+  getUserRecentPosts
+);
 app.route("/", protectedRouteProfileAccess);
 
 const protectedRoutesValidateJWT = new Hono();
@@ -108,7 +118,8 @@ protectedRoutesValidateJWT.get(
   "/api/chat/:userId/:oppositeUserId",
   getChatHistoryHandler
 );
-protectedRoutesValidateJWT.post("/api/notify-chat", notifyChatHandler);
+protectedRoutesValidateJWT.post("/api/save-push-subscription", savePushSubscription)
+protectedRoutesValidateJWT.route("/api", notificationRoute);
 app.route("/", protectedRoutesValidateJWT);
 
 // Start server
