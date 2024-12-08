@@ -109,10 +109,12 @@ export default function Users() {
   useEffect(() => {
     if (users.length > 0) {
       const options = {
-        keys: ["username"],
-        threshold: 0.4,
-        distance: 100,
-        minMatchCharLength: 2,
+        keys: ["username", "name"],
+        threshold: 0.3,
+        distance: 50,
+        minMatchCharLength: 1,
+        ignoreLocation: true,
+        includeScore: true,
       };
       setFuse(new Fuse(users, options));
     }
@@ -124,7 +126,12 @@ export default function Users() {
       return;
     }
     const result = fuse.search(searchQuery);
-    setFilteredUsers(result.map((res: any) => res.item));
+
+    const sortedResults = result
+    .map((res: any) => res.item)
+    .sort((a, b) => (a.score || 0) - (b.score || 0));
+
+    setFilteredUsers(sortedResults);
   }, [searchQuery, fuse, users]);
 
   useEffect(() => {
