@@ -273,17 +273,17 @@ export default function Requests() {
               <>
                 <style>
                   {`
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #415044;
-            border-radius: 4px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-          }
-        `}
+                    .custom-scrollbar::-webkit-scrollbar {
+                      width: 6px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                      background-color: #415044;
+                      border-radius: 4px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                      background: transparent;
+                    }
+                  `}
                 </style>
 
                 <div className="space-y-4 custom-scrollbar pr-2 overflow-y-auto max-h-[55vh]">

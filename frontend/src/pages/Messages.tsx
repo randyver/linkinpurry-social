@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
-import { MessageCircleMore } from 'lucide-react';
+import { Button } from "../components/ui/button";
+import { ArrowLeft, MessageCircleMore, Send } from "lucide-react";
 
 interface ConnectedUser {
   toId: string;
@@ -131,6 +131,7 @@ function Messages() {
     await fetch("http://localhost:3000/api/notify-chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         senderId: currentUser,
         receiverId: selectedUser.toId,
@@ -159,24 +160,23 @@ function Messages() {
 
   return (
     <div className="bg-wbd-background h-screen flex items-center justify-center">
-      <div className="flex min-h-[600px] w-3/5 bg-wbd-background mt-16 fixed">
-        {/* connected user section */}
+      <div className="flex flex-col md:flex-row min-h-[600px] w-11/12 md:w-3/4 lg:w-2/3 bg-wbd-secondary shadow-2xl rounded-lg overflow-hidden">
         <div
-          className={`w-full md:w-1/3 bg-wbd-secondary p-6 border-r-4 border-wbd-background rounded-lg ${
+          className={`w-full md:w-1/3 bg-wbd-secondary p-6 border-r ${
             isChatOpen ? "hidden md:block" : "block"
           }`}
         >
-          <h2 className="text-xl xl:text-2xl font-semibold text-wbd-text mb-6">
+          <h2 className="text-xl xl:text-2xl font-semibold text-wbd-primary mb-6">
             Connected Users
           </h2>
-          <ul className="space-y-4">
+          <ul className="space-y-4 max-h-[470px] overflow-y-auto custom-scrollbar">
             {connectedUsers.map((user) => (
               <li
                 key={user.toId}
-                className="flex items-center space-x-4 p-3 rounded-lg hover:bg-wbd-tertiary cursor-pointer"
+                className="flex items-center space-x-4 p-3 rounded-lg hover:bg-wbd-tertiary transition-all cursor-pointer"
                 onClick={() => selectChat(user)}
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden">
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-wbd-tertiary shadow-md">
                   <img
                     src={user.profilePhotoPath || "/default-avatar.png"}
                     alt={user.username}
@@ -191,30 +191,32 @@ function Messages() {
           </ul>
         </div>
 
-        {/* chat section */}
         <div
-          className={`w-full p-6 bg-wbd-secondary rounded-md ${isChatOpen ? "block" : "hidden"} md:block`}
+          className={`w-full md:w-2/3 p-6 bg-wbd-background ${
+            isChatOpen ? "block" : "hidden"
+          } md:block`}
         >
           {!selectedUser ? (
-            <div className="flex flex-col mt-40">
-              <p className="text-center text-wbd-text text-xl xl:text-2xl xl:mx-24 font-semibold">Connect with users to start chatting. Select a user from the list to begin!</p>
-              <MessageCircleMore size={100} className="mx-auto mt-8 text-wbd-text" />
+            <div className="flex flex-col items-center justify-center h-full">
+              <MessageCircleMore size={80} className="text-wbd-primary mb-4" />
+              <p className="text-2xl text-center text-wbd-primary font-semibold">
+                Select a user to start chatting!
+              </p>
             </div>
           ) : (
             <>
-              {/* Tombol back */}
-              <button
-                onClick={goBack}
-                className="text-wbd-text flex items-center mb-4 p-2 rounded-lg hover:scale-105 transition-transform"
-              >
-                <ArrowLeft size={20} className="mr-2" />
-                Back
-              </button>
-
-              <h2 className="text-2xl font-semibold text-wbd-text mb-4">
-                Chat with {selectedUser.username}
-              </h2>
-              <div className="bg-wbd-background p-6 h-[400px] overflow-y-auto border border-gray-300 rounded-lg shadow-sm mb-6">
+              <div className="flex items-center mb-6">
+                <button
+                  onClick={goBack}
+                  className="text-wbd-text hover:text-wbd-tertiary transition-all mr-4"
+                >
+                  <ArrowLeft size={24} />
+                </button>
+                <h2 className="text-xl font-semibold text-wbd-text">
+                  Chat with {selectedUser.username}
+                </h2>
+              </div>
+              <div className="bg-wbd-secondary p-4 h-[400px] overflow-y-auto border rounded-lg shadow-md custom-scrollbar">
                 <div className="space-y-4">
                   {chatHistory.map((msg) => (
                     <div
@@ -226,20 +228,14 @@ function Messages() {
                       }`}
                     >
                       <div
-                        className={`max-w-[80%] p-3 rounded-lg ${
+                        className={`max-w-[80%] p-4 rounded-lg shadow-lg ${
                           msg.senderId === currentUser
                             ? "bg-wbd-tertiary text-white"
-                            : "bg-wbd-secondary text-wbd-text"
+                            : "bg-wbd-background text-wbd-text"
                         }`}
                       >
                         <p>{msg.message}</p>
-                        <p
-                          className={`text-xs ${
-                            msg.senderId === currentUser
-                              ? "text-gray-300"
-                              : "text-gray-500"
-                          } mt-1`}
-                        >
+                        <p className="text-xs mt-2 opacity-80">
                           {format(
                             new Date(msg.timestamp),
                             "MMM dd, yyyy hh:mm a",
@@ -251,26 +247,41 @@ function Messages() {
                 </div>
                 <div ref={chatEndRef} />
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center mt-6 h-[48px]">
                 <input
                   type="text"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wbd-tertiary text-wbd-text bg-wbd-background"
+                  className="w-full h-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-wbd-tertiary text-wbd-text bg-wbd-secondary"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your message..."
                 />
-                <button
+                <Button
                   onClick={sendMessage}
-                  className="bg-wbd-tertiary text-white p-3 rounded-lg"
+                  variant={"default"}
+                  className="ml-4 h-full px-4 hover:scale-105 transition flex items-center justify-center"
                 >
-                  Send
-                </button>
+                  <Send className="text-xl" />
+                </Button>
               </div>
             </>
           )}
         </div>
       </div>
+      <style>
+        {`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #3A4A3F;
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+        `}
+      </style>
     </div>
   );
 }
