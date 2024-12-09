@@ -88,7 +88,7 @@ export default function Home() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-wbd-background pt-20">
+    <div className="min-h-screen bg-wbd-background pt-28">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-7xl mx-auto p-4">
         {/* Sidebar Kiri */}
         {user && (

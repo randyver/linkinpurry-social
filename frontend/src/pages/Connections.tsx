@@ -173,7 +173,7 @@ export default function Connections() {
   }, [page]);
 
   return (
-    <div className="min-h-screen bg-wbd-background pt-24 px-8">
+    <div className="min-h-screen bg-wbd-background pt-28 px-8">
       <section className="p-6 mx-auto max-w-7xl space-y-8">
         <div className="bg-gradient-to-br from-wbd-primary to-wbd-tertiary p-8 rounded-xl shadow-md text-center space-y-2">
           <div className="flex flex-col items-center space-y-3">
