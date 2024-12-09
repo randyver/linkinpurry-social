@@ -20,6 +20,7 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
+    <li><a href="#api-documentation">API Documentation</a></li>
     <li><a href="#contributors">Contributors</a></li>
     <li><a href="#tasks-allocation">Tasks Allocation</a></li>
   </ol>
@@ -63,6 +64,17 @@ To access this web locally on your device, there are some prerequisites and inst
     ```sh
     localhost:5173
     ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## API Documentation
+
+Access the comprehensive **LinkinPurry API Documentation** to explore all available endpoints and learn how to integrate seamlessly with our platform.
+
+**Postman Documentation:**  
+[View LinkinPurry API Documentation](https://documenter.getpostman.com/view/34429227/2sAYBbf9RK#973d7d91-a4e2-4845-9f77-5f13d5d77fe8)
+
+Discover how to connect, collaborate, and build with LinkinPurry effortlessly!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
