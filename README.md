@@ -3,8 +3,8 @@
 <a id="readme-top"></a>
 <br />
 <div align="center">
-    <img src="frontend/public/images/logo-dark.png" alt="LinkinPurry Logo">
-    <h3>LinkinPurry – Your Bridge to Opportunity</h3>
+    <img src="frontend/public/logo-dark.png" alt="LinkinPurry Logo">
+    <h3>LinkinPurry – Your Gateway to Collaboration and Connection</h3>
 </div>
 
 <details>
@@ -27,11 +27,11 @@
 
 ## About The Project
 
-LinkinPurry is a platform designed to connect job seekers with the right job opportunities and empower companies to upload and manage job listings effortlessly. Inspired by Purry the Platypus and the challenges faced by the agents of O.W.C.A., LinkinPurry serves as a solution to bridge the gap between those seeking employment and organizations offering exciting career prospects.
+LinkinPurry is a platform crafted to foster meaningful connections and ignite creative collaboration. Inspired by Purry the Platypus and the challenges faced by the agents of O.W.C.A., LinkinPurry was born as a solution to enhance secure communication and teamwork among agents.
 
-At LinkinPurry, we are dedicated to making the job search and recruitment experience smooth, efficient, and successful for both individuals and businesses. Our platform offers key features such as job search filtering, easy job listing management, and a user-friendly interface, ensuring an optimal experience for all users.
+With features like personalized news feeds, seamless agent connections, and encrypted direct messaging, LinkinPurry provides a secure and efficient environment for agents to share updates, exchange ideas, and collaborate on missions.
 
-Whether you’re a job seeker looking for the perfect role or a company seeking top talent, LinkinPurry is here to support you every step of the way.
+Whether you're an agent looking to stay informed or connect with your peers, LinkinPurry is your ultimate tool for building networks and strengthening teamwork across the globe.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -49,13 +49,14 @@ To access this web locally on your device, there are some prerequisites and inst
 1. Clone this repository
 <br>Begin by cloning the project repository from GitHub:</br>
    ```sh
+   git clone https://github.com/Labpro-21/if-3310-2024-2-k02-19.git
    ```
 2. Launch Docker Desktop
 <br>Ensure that Docker Desktop is installed and running on your machine.</br>
 3. Establish connection to the database
 <br>Use the following command to build and run the Docker containers, which include the application and database</br>
    ```sh
-   docker compose up --build
+   docker-compose --env-file ./backend/.env up --build
    ```
 4. Access the Application
 <br>Once the Docker containers are running, open your web browser and navigate to:</br>
@@ -70,17 +71,17 @@ To access this web locally on your device, there are some prerequisites and inst
 <table style="border-collapse: collapse; width: 100%;">
   <tr>
     <td style="text-align: center;">
-      <img src="frontend/public/images/salsa-pic.png" alt="Salsabiila's Picture" width="150" height="150" style="border-radius: 50%;">
+      <img src="frontend/public/salsa-pic.png" alt="Salsabiila's Picture" width="150" height="150" style="border-radius: 50%;">
       <p>Salsabiila</p>
       <p>13522062</p>
     </td>
     <td style="text-align: center;">
-      <img src="frontend/public/images/randy-pic.png" alt="Randy Verdian's Picture" width="150" height="150" style="border-radius: 50%;">
+      <img src="frontend/public/randy-pic.png" alt="Randy Verdian's Picture" width="150" height="150" style="border-radius: 50%;">
       <p>Randy Verdian</p>
       <p>13522067</p>
     </td>
     <td style="text-align: center;">
-      <img src="frontend/public/images/juan-pic.png" alt="Juan Alfred Widjaya's Picture" width="150" height="150" style="border-radius: 50%;">
+      <img src="frontend/public/juan-pic.png" alt="Juan Alfred Widjaya's Picture" width="150" height="150" style="border-radius: 50%;">
       <p>Juan Alfred Widjaya</p>
       <p>13522073</p>
     </td>
@@ -90,5 +91,35 @@ To access this web locally on your device, there are some prerequisites and inst
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Tasks Allocation
+1. **Server-side**  
+   - Login: 13522067  
+   - Register: 13522067
+   - Daftar Pengguna: 13522062
+   - Permintaan Koneksi: 13522073
+   - Daftar Koneksi: 13522073
+   - Profil: 13522073
+   - Halaman Feed: 13522067
+   - Tambah Feed: 13522067
+   - Edit Feed: 13522067
+   - Private Chat: 13522073
+   - Riwayat Chat: 13522073, 13522062
+   - Notifikasi Chat: 13522073, 13522062
+
+2. **Client-side**
+   - Login: 13522067  
+   - Register: 13522067  
+   - Navbar: 13522062  
+   - Footer: 13522062  
+   - About: 13522062
+   - Landing: 13522067
+   - Daftar Pengguna: 13522062
+   - Permintaan Koneksi: 13522062
+   - Daftar Koneksi: 13522062
+   - Profil: 13522062
+   - Halaman Feed: 13522067
+   - Tambah Feed: 13522067
+   - Edit Feed: 13522067
+   - Private Chat: 13522073
+   - Not Found Page: 13522067
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
