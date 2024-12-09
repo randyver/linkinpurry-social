@@ -4,14 +4,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "k6 run index.js"
+    "test:profile": "k6 run profile.js",
+    "test:feed": "k6 run feed.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "k6": "^0.0.0",
-    "wbd-tests": "file:"
+    "k6": "^0.0.0"
   }
 }
