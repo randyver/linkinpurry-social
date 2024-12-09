@@ -41,6 +41,7 @@ import { validateJWT } from "./middleware/validateJWT.js";
 import { profileAccessMiddleware } from "./middleware/profileAccess.js";
 
 import { attachSocket } from "./socket.js";
+import vapidRoute from "./routes/vapid.js";
 
 export const app = new Hono();
 
@@ -58,15 +59,6 @@ app.use(
 // Base route
 app.get("/", (c) => c.text("Hello Hono!"));
 
-app.get("/api/vapid-key", (c) => {
-  const vapidKey = process.env.VAPID_PUBLIC_KEY!;
-  console.log("VAPID Key:", vapidKey);
-  if (!vapidKey) {
-    return c.json({ error: "VAPID key not set in the environment" }, 500);
-  }
-  return c.json({ vapidKey });
-});
-
 // Public Routes
 const publicRoutes = new Hono();
 publicRoutes.route("/api", registerRoute);
@@ -74,6 +66,7 @@ publicRoutes.route("/api", loginRoute);
 publicRoutes.route("/api", userSearchRoute);
 publicRoutes.route("/api", userRoute);
 publicRoutes.route("/api", usersRoute);
+publicRoutes.route("/api", vapidRoute);
 publicRoutes.get("/api/get-url", getSignedUrlHandler);
 publicRoutes.get("/api/connections/user/:user_id", getConnectionsHandler);
 app.route("/", publicRoutes);
@@ -118,7 +111,10 @@ protectedRoutesValidateJWT.get(
   "/api/chat/:userId/:oppositeUserId",
   getChatHistoryHandler
 );
-protectedRoutesValidateJWT.post("/api/save-push-subscription", savePushSubscription)
+protectedRoutesValidateJWT.post(
+  "/api/save-push-subscription",
+  savePushSubscription
+);
 protectedRoutesValidateJWT.route("/api", notificationRoute);
 app.route("/", protectedRoutesValidateJWT);
 
