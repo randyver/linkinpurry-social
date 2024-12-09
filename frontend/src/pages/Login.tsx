@@ -24,8 +24,8 @@ import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.string().email("Email is required"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(1, "Password is required."),
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;
@@ -50,11 +50,11 @@ export default function Login() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-        credentials: "include",
+        credentials: "include", // Ensure the backend is set up to handle credentials
       });
-  
+
       const result = await response.json();
-  
+
       if (!response.ok) {
         toast.dismiss();
         toast.error(result.message || "Login failed. Please check your credentials.");
@@ -62,14 +62,14 @@ export default function Login() {
       }
 
       toast.dismiss();
-      toast.success(`Welcome back!`);
+      toast.success("Welcome back!");
       navigate("/home");
     } catch (error) {
       toast.dismiss();
       toast.error("An error occurred while logging in. Please try again later.");
     }
   };
-  
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-wbd-background text-wbd-text px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-lg md:max-w-md bg-wbd-secondary shadow-lg">
@@ -94,18 +94,6 @@ export default function Login() {
                         {...field}
                         className="border-wbd-tertiary focus:ring-wbd-highlight focus:border-wbd-highlight"
                       />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label="Toggle Password Visibility"
-                      >
-                        {showPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
-                      </button>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -116,34 +104,30 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-wbd-tertiary">
-                      Password
-                    </FormLabel>
+                    <FormLabel className="text-wbd-tertiary">Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Password"
-                        {...field}
-                        className="border-wbd-tertiary focus:ring-wbd-highlight focus:border-wbd-highlight"
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label="Toggle Password Visibility"
-                      >
-                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                      </button>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Password"
+                          {...field}
+                          className="border-wbd-tertiary focus:ring-wbd-highlight focus:border-wbd-highlight"
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label="Toggle Password Visibility"
+                        >
+                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button
-                variant={"default"}
-                type="submit"
-                className="w-full mt-8"
-              >
+              <Button variant={"default"} type="submit" className="w-full mt-8">
                 Login
               </Button>
 
