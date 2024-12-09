@@ -294,16 +294,19 @@ export default function Profile() {
     const parsed = parseWorkHistory(workHistory).map((job) => {
       const endDate =
         job.end_date && job.end_date.trim() ? job.end_date : "Present";
-      const startDate = new Date(job.start_date);
+      const startDate = job.start_date ? new Date(job.start_date) : null;
       const calculatedEndDate =
         endDate === "Present" ? new Date() : new Date(endDate);
 
       return {
         ...job,
         end_date: endDate,
-        duration: calculateDuration(startDate, calculatedEndDate),
+        duration: startDate
+          ? calculateDuration(startDate, calculatedEndDate)
+          : "",
       };
     });
+
     return sortWorkHistory(parsed);
   };
 
@@ -844,9 +847,12 @@ export default function Profile() {
                           {job.position}
                         </h3>
                         <p className="text-wbd-text">{job.company}</p>
-                        <p className="text-sm text-gray-500">
-                          {job.start_date} - {job.end_date} • {job.duration}
-                        </p>
+                        {job.start_date && (
+                          <p className="text-sm text-gray-500">
+                            {job.start_date} - {job.end_date}{" "}
+                            {job.duration && `• ${job.duration}`}
+                          </p>
+                        )}
                       </div>
                     ),
                   )}
