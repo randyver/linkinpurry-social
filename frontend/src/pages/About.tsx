@@ -47,29 +47,39 @@ export default function About() {
         <DynamicBackground />
       </div>
 
-      <section className="flex flex-col items-left justify-center min-h-screen px-4 sm:px-8 md:px-16 lg:px-32 xl:px-80 text-left relative">
-        <h1 className="text-5xl text-wbd-primary font-bold mb-6 leading-tight">
-          <span className="block">Linkinpurry</span>
-          <span className="text-wbd-highlight text-4xl">
-            Connecting with Purpose
-          </span>
-        </h1>
-        <p className="text-lg text-wbd-text max-w-2xl lg:mx-0 mb-8 leading-relaxed">
-          Linkinpurry is a platform designed to enable meaningful connections
-          and inspire creative collaboration. By focusing on authenticity and
-          shared experiences, it offers a refreshing alternative to the noise of
-          traditional social media.
-        </p>
-
-        <div
-          className="flex items-center space-x-2 mt-4 cursor-pointer group"
-          onClick={() => navigate("/userlist")}
-        >
-          <p className="text-wbd-primary font-medium text-xl transition-all duration-200 ease-in-out group-hover:scale-105">
-            Explore Our Community
+      <section className="flex flex-col lg:flex-row items-center justify-between min-h-screen px-4 sm:px-8 md:px-16 lg:px-32 xl:px-80 text-left relative">
+        <div className="flex flex-col items-left justify-center lg:w-1/2">
+          <h1 className="text-5xl text-wbd-primary font-bold mb-6 leading-tight">
+            <span className="block">Linkinpurry</span>
+            <span className="text-wbd-highlight text-4xl">
+              Connecting with Purpose
+            </span>
+          </h1>
+          <p className="text-lg text-wbd-text max-w-2xl lg:mx-0 mb-8 leading-relaxed">
+            Linkinpurry is a platform designed to enable meaningful connections
+            and inspire creative collaboration. By focusing on authenticity and
+            shared experiences, it offers a refreshing alternative to the noise
+            of traditional social media.
           </p>
 
-          <ArrowRight className="text-wbd-primary h-7 w-7 transform transition-transform duration-200 ease-out group-hover:translate-x-3 group-hover:scale-105" />
+          <div
+            className="flex items-center space-x-2 mt-4 cursor-pointer group"
+            onClick={() => navigate("/userlist")}
+          >
+            <p className="text-wbd-primary font-medium text-xl transition-all duration-200 ease-in-out group-hover:scale-105">
+              Explore Our Community
+            </p>
+
+            <ArrowRight className="text-wbd-primary h-7 w-7 transform transition-transform duration-200 ease-out group-hover:translate-x-3 group-hover:scale-105" />
+          </div>
+        </div>
+
+        <div className="mt-8 lg:mt-0 lg:w-1/2 flex justify-center">
+          <img
+            src="person.svg"
+            alt="Person Illustration"
+            className="w-80 h-auto lg:max-w-full"
+          />
         </div>
       </section>
 

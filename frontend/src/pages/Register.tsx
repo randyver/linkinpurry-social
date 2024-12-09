@@ -211,8 +211,9 @@ export default function Register() {
                 )}
               />
               <Button
+                variant={"default"}
                 type="submit"
-                className="w-full bg-wbd-primary text-white hover:bg-wbd-tertiary"
+                className="w-full"
               >
                 Register
               </Button>

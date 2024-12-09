@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -20,10 +21,11 @@ import {
 } from "../components/ui/card";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.string().email("Email is required"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(1, "Password is required."),
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;
@@ -37,72 +39,8 @@ export default function Login() {
       password: "",
     },
   });
+  const [showPassword, setShowPassword] = useState(false);
 
-  const requestNotificationPermission = async () => {
-    console.log("Current Notification Permission:", Notification.permission);
-    if ("Notification" in window && Notification.permission !== "granted") {
-      console.log("Requesting notification permission");
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission !== "granted") {
-          console.error("Notification permission denied");
-        }
-      } catch (error) {
-        console.error("Failed to request notification permission:", error);
-      }
-    }
-  };
-
-  const getVapidKey = async (): Promise<string> => {
-    try {
-      const response = await fetch("http://localhost:3000/api/vapid-key");
-      if (!response.ok) {
-        throw new Error("Failed to fetch VAPID key");
-      }
-      const { vapidKey } = await response.json();
-      return vapidKey;
-    } catch (error) {
-      console.error("Error fetching VAPID key:", error);
-      throw error;
-    }
-  };
-  
-
-  const registerPushSubscription = async () => {
-    console.log("Registering push subscription");
-    if ("serviceWorker" in navigator) {
-      try {
-        const vapidKey = await getVapidKey();
-        const registration = await navigator.serviceWorker.ready;
-  
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: vapidKey,
-        });
-
-        console.log(subscription);
-        
-        const response = await fetch("http://localhost:3000/api/save-push-subscription", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(subscription),
-        });
-  
-        if (!response.ok) {
-          throw new Error("Failed to save subscription on the server");
-        }
-  
-        console.log("Push subscription registered successfully");
-      } catch (error) {
-        console.error("Failed to register push subscription:", error);
-      }
-    }
-  };
-  
-  
   const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
     toast.loading("Logging in...");
     try {
@@ -112,30 +50,25 @@ export default function Login() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-        credentials: "include",
+        credentials: "include", // Ensure the backend is set up to handle credentials
       });
-  
+
       const result = await response.json();
-  
+
       if (!response.ok) {
         toast.dismiss();
         toast.error(result.message || "Login failed. Please check your credentials.");
         return;
       }
-  
+
       toast.dismiss();
-      toast.success(`Welcome back!`);
-      await requestNotificationPermission();
-      if (Notification.permission === "granted") {
-        await registerPushSubscription();
-      }
+      toast.success("Welcome back!");
       navigate("/home");
     } catch (error) {
       toast.dismiss();
       toast.error("An error occurred while logging in. Please try again later.");
     }
   };
-  
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-wbd-background text-wbd-text px-4 sm:px-6 lg:px-8">
@@ -171,25 +104,30 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-wbd-tertiary">
-                      Password
-                    </FormLabel>
+                    <FormLabel className="text-wbd-tertiary">Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        {...field}
-                        className="border-wbd-tertiary focus:ring-wbd-highlight focus:border-wbd-highlight"
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Password"
+                          {...field}
+                          className="border-wbd-tertiary focus:ring-wbd-highlight focus:border-wbd-highlight"
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label="Toggle Password Visibility"
+                        >
+                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                className="w-full mt-8 bg-wbd-primary text-white hover:bg-wbd-tertiary transition-all duration-300"
-              >
+              <Button variant={"default"} type="submit" className="w-full mt-8">
                 Login
               </Button>
 
